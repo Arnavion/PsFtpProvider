@@ -68,8 +68,6 @@ namespace PsFtpProvider
 
 		public IList Read(long readCount)
 		{
-			var result = new List<byte[]>();
-
 			var buffer = new byte[4096];
 
 			if (readCount <= 0 || encoding != null)
@@ -77,29 +75,22 @@ namespace PsFtpProvider
 				readCount = long.MaxValue;
 			}
 
-			while (readCount > 0)
+			var read = stream.Read(buffer, 0, (int)Math.Min(readCount, buffer.Length));
+			var result = new byte[read];
+			Array.Copy(buffer, result, read);
+
+			if (read == 0)
 			{
-				var read = stream.Read(buffer, 0, (int)Math.Min(readCount, buffer.Length));
-				if (read == 0)
-				{
-					break;
-				}
-
-				var copy = new byte[read];
-				Array.Copy(buffer, copy, read);
-				result.Add(copy);
-
-				readCount -= read;
+				return result;
 			}
 
-			var resultBytes = result.SelectMany(bytes => bytes).ToArray();
-			if (encoding == null || resultBytes.Length == 0)
+			if (encoding == null || result.Length == 0)
 			{
-				return resultBytes;
+				return result;
 			}
 			else
 			{
-				return new[] { encoding.GetString(resultBytes) };
+				return new[] { encoding.GetString(result) };
 			}
 		}
 
