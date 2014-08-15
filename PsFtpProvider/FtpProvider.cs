@@ -18,6 +18,7 @@
  * limitations under the License.
  */
 
+using Microsoft.PowerShell.Commands;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -210,7 +211,7 @@ namespace PsFtpProvider
 
 		public void ClearContent(string path)
 		{
-			using (var writer = new ContentReaderWriter(PSDriveInfo, path, ContentReaderWriter.Mode.Write))
+			using (var writer = new ContentReaderWriter(PSDriveInfo, path, ContentReaderWriter.Mode.Write, null))
 			{
 				writer.Truncate();
 			}
@@ -223,22 +224,28 @@ namespace PsFtpProvider
 
 		public IContentReader GetContentReader(string path)
 		{
-			return new ContentReaderWriter(PSDriveInfo, path, ContentReaderWriter.Mode.Read);
+			var contentDynamicParameters = DynamicParameters as ContentReaderWriterDynamicParameters;
+			var encoding = contentDynamicParameters != null ? contentDynamicParameters.Encoding : FileSystemCmdletProviderEncoding.Byte;
+
+			return new ContentReaderWriter(PSDriveInfo, path, ContentReaderWriter.Mode.Read, DynamicParameters as ContentReaderWriterDynamicParameters);
 		}
 
 		public object GetContentReaderDynamicParameters(string path)
 		{
-			return null;
+			return new ContentReaderWriterDynamicParameters();
 		}
 
 		public IContentWriter GetContentWriter(string path)
 		{
-			return new ContentReaderWriter(PSDriveInfo, path, ContentReaderWriter.Mode.Write);
+			var contentDynamicParameters = DynamicParameters as ContentReaderWriterDynamicParameters;
+			var encoding = (contentDynamicParameters != null ? contentDynamicParameters.Encoding : FileSystemCmdletProviderEncoding.UTF8);
+
+			return new ContentReaderWriter(PSDriveInfo, path, ContentReaderWriter.Mode.Write, DynamicParameters as ContentReaderWriterDynamicParameters);
 		}
 
 		public object GetContentWriterDynamicParameters(string path)
 		{
-			return null;
+			return new ContentReaderWriterDynamicParameters();
 		}
 
 		#endregion

@@ -45,30 +45,57 @@ msbuild .\PsFtpProvider.sln
 
 * Browse around
 
-	```powershell
-	# List all items in current directory
-	dir
+	* List all items in current directory
 
-	# List all items in current directory recursively.
-	# If not supported by the server, this returns the same results as without the -Recurse switch
-	dir -Recurse
+		```powershell
+		dir
+		```
 
-	# Get a file's contents (bytes)
-	cat ./file.txt
+	* List all items in current directory recursively.
 
-	# Get a file's contents (string)
-	[System.Text.Encoding]::UTF8.GetString($(cat ./file.txt))
+		```powershell
+		# If not supported by the server, this returns the same results as without the -Recurse switch
+		dir -Recurse
+		```
 
-	# Save a file to local machine. Can't use Copy-Item because it doesn't support the source and target being different providers.
-	[System.IO.File]::WriteAllBytes('C:\file.txt', $(cat './file.txt'))
+	* Get a file's contents
 
-	# Save a file to local machine. You don't need to cd to the site drive first. Fully qualified paths work too.
-	[System.IO.File]::WriteAllBytes('C:\file.txt', $(cat 'MyFtpSite:/file.txt'))
+		```powershell
+		# Get a binary file's contents
+		cat ./file.bin
 
-	# Set a file's contents
-	# If given a byte array, the bytes are used as-is. If given a string, the string is saved as UTF-8.
-	Set-Content ./file.txt 'aaa'
-	```
+		# Get a text file's contents
+		cat ./file.txt -Encoding UTF8
+		```
+
+	* Save a file to a local drive
+
+		```powershell
+		# Can't use Copy-Item because it doesn't support the source and target being different providers.
+
+		# Save a binary file
+		[System.IO.File]::WriteAllBytes('C:\file.bin', $(cat './file.bin'))
+
+		# Save a text file
+		Set-Content C:\file.txt $(cat './file.txt' -Encoding UTF8) -Encoding UTF8
+
+		# You don't need to cd to the site drive first. Fully qualified paths work too.
+		[System.IO.File]::WriteAllBytes('C:\file.bin', $(cat 'MyFtpSite:/file.bin'))
+		Set-Content C:\file.txt $(cat 'MyFtpSite:/file.txt' -Encoding UTF8) -Encoding UTF8
+		```
+
+	* Write a file
+
+		```powershell
+		# Write a binary file
+		Set-Content ./file.bin [System.Text.Encoding]::UTF8.GetBytes('aaa')
+
+		# Write a text file in the given encoding
+		Set-Content ./file.txt 'aaa' -Encoding UTF8
+
+		# Write a text file without specifying the encoding. Defaults to UTF-8.
+		Set-Content ./file.txt 'aaa'
+		```
 
 
 ### Links
