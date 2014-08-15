@@ -56,7 +56,13 @@ msbuild .\PsFtpProvider.sln
 	# Get a file's contents (bytes)
 	cat ./file.txt
 
+	# Get a file's contents (string)
+	[System.Text.Encoding]::UTF8.GetString($(cat ./file.txt))
+
 	# Save a file to local machine. Can't use Copy-Item because it doesn't support the source and target being different providers.
+	[System.IO.File]::WriteAllBytes('C:\file.txt', $(cat './file.txt'))
+
+	# Save a file to local machine. You don't need to cd to the site drive first. Fully qualified paths work too.
 	[System.IO.File]::WriteAllBytes('C:\file.txt', $(cat 'MyFtpSite:/file.txt'))
 
 	# Set a file's contents
