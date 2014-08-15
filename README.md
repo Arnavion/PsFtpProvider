@@ -56,6 +56,9 @@ msbuild .\PsFtpProvider.sln
 	# Get a file's contents (bytes)
 	cat ./file.txt
 
+	# Save a file to local machine. Can't use Copy-Item because it doesn't support the source and target being different providers.
+	[System.IO.File]::WriteAllBytes('C:\file.txt', $(cat 'MyFtpSite:/file.txt'))
+
 	# Set a file's contents
 	# If given a byte array, the bytes are used as-is. If given a string, the string is saved as UTF-8.
 	Set-Content ./file.txt 'aaa'
