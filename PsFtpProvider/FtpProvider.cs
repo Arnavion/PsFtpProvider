@@ -90,7 +90,7 @@ namespace PsFtpProvider
 		{
 			foreach (var item in PSDriveInfo.GetChildItems(path, recurse))
 			{
-				WriteItemObject(item, PSDriveInfo.Site.Hostname + item.FullName, item.Type == FtpFileSystemObjectType.Directory);
+				WriteItemObject(item, item.FullName, item.Type == FtpFileSystemObjectType.Directory);
 			}
 		}
 
