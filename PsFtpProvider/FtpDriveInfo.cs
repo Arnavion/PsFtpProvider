@@ -119,7 +119,7 @@ namespace PsFtpProvider
 				throw new ArgumentOutOfRangeException("path", "Item is not a file.");
 			}
 
-			return new ContentReaderWriter(cache.Client.OpenRead(path, FtpDataType.Binary), ContentReaderWriter.Mode.Read, parameters, item.Parent);
+			return new ContentReaderWriter(item, ContentReaderWriter.Mode.Read, parameters, cache.Client);
 		}
 
 		internal ContentReaderWriter GetContentWriter(string path, ContentReaderWriterDynamicParameters parameters)
@@ -140,7 +140,7 @@ namespace PsFtpProvider
 				throw new ArgumentOutOfRangeException("path", "Cannot create a new file with that name because a non-file item of that name already exists.");
 			}
 
-			return new ContentReaderWriter(cache.Client.OpenWrite(path, FtpDataType.Binary), ContentReaderWriter.Mode.Read, parameters, item.Parent);
+			return new ContentReaderWriter(item, ContentReaderWriter.Mode.Write, parameters, cache.Client);
 		}
 	}
 

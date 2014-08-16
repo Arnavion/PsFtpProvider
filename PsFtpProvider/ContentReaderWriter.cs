@@ -25,29 +25,32 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Provider;
+using System.Net.FtpClient;
 using System.Text;
 
 namespace PsFtpProvider
 {
 	internal class ContentReaderWriter : IContentReader, IContentWriter
 	{
-		public enum Mode { Read, Write }
+		public enum Mode { Read, Write, Append }
+
+		private CacheNode item;
 
 		private Mode mode;
 
-		private CacheDirectoryNode parent;
+		private Encoding encoding;
+
+		private FtpClient client;
 
 		private Stream stream;
 
-		private Encoding encoding;
-
-		public ContentReaderWriter(Stream stream, Mode mode, ContentReaderWriterDynamicParameters parameters, CacheDirectoryNode parent)
+		public ContentReaderWriter(CacheNode item, Mode mode, ContentReaderWriterDynamicParameters parameters, FtpClient client)
 		{
-			this.parent = parent;
+			this.item = item;
 
 			this.mode = mode;
 
-			this.stream = stream;
+			this.client = client;
 
 			var encoding = parameters != null ? parameters.Encoding : FileSystemCmdletProviderEncoding.Byte;
 
@@ -63,6 +66,16 @@ namespace PsFtpProvider
 
 		public void Truncate()
 		{
+			if (stream == null)
+			{
+				if (mode != Mode.Write)
+				{
+					throw new InvalidOperationException("Cannot write to a non-writable stream.");
+				}
+
+				stream = client.OpenWrite(item.Item.FullName, FtpDataType.Binary);
+			}
+
 			stream.SetLength(0);
 		}
 
@@ -70,6 +83,16 @@ namespace PsFtpProvider
 
 		public IList Read(long readCount)
 		{
+			if (stream == null)
+			{
+				if (mode != Mode.Read)
+				{
+					throw new InvalidOperationException("Cannot read from a non-readable stream.");
+				}
+
+				stream = client.OpenRead(item.Item.FullName, FtpDataType.Binary);
+			}
+
 			var buffer = new byte[4096];
 
 			if (readCount <= 0 || encoding != null)
@@ -107,6 +130,23 @@ namespace PsFtpProvider
 				return content;
 			}
 
+			if (stream == null)
+			{
+				switch (mode)
+				{
+					case Mode.Write:
+						stream = client.OpenWrite(item.Item.FullName, FtpDataType.Binary);
+						break;
+
+					case Mode.Append:
+						stream = client.OpenAppend(item.Item.FullName, FtpDataType.Binary);
+						break;
+
+					default:
+						throw new InvalidOperationException("Cannot write to a non-writable stream.");
+				}
+			}
+
 			byte[] bytes;
 			if (content[0] is string && content.Count == 1)
 			{
@@ -135,23 +175,44 @@ namespace PsFtpProvider
 
 		#region Common members
 
-		public void Close()
-		{
-			stream.Close();
-		}
-
 		public void Seek(long offset, SeekOrigin origin)
 		{
-			stream.Seek(offset, origin);
+			if (mode == Mode.Write && offset == 0 && origin == SeekOrigin.End)
+			{
+				mode = Mode.Append;
+				return;
+			}
+
+			throw new InvalidOperationException("Seeking is not supported.");
+		}
+
+		public void Close()
+		{
+			if (stream == null)
+			{
+				return;
+			}
+
+			stream.Close();
+
+			if (mode == Mode.Write || mode == Mode.Append)
+			{
+				item.Parent.MarkDirty();
+			}
 		}
 
 		public void Dispose()
 		{
+			if (stream == null)
+			{
+				return;
+			}
+
 			stream.Dispose();
 
-			if (mode == Mode.Write)
+			if (mode == Mode.Write || mode == Mode.Append)
 			{
-				parent.MarkDirty();
+				item.Parent.MarkDirty();
 			}
 		}
 

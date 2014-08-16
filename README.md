@@ -97,6 +97,19 @@ msbuild .\PsFtpProvider.sln
 		Set-Content ./file.txt 'aaa'
 		```
 
+	* Append to a file
+
+		```powershell
+		# Append to a binary file
+		Add-Content ./file.bin [System.Text.Encoding]::UTF8.GetBytes('aaa')
+
+		# Append to a text file in the given encoding
+		Add-Content ./file.txt 'aaa' -Encoding UTF8
+
+		# Append to a text file without specifying the encoding. Defaults to UTF-8.
+		Add-Content ./file.txt 'aaa'
+		```
+
 
 ### Caveats of the drive cache
 
