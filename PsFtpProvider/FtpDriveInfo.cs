@@ -18,7 +18,8 @@
  * limitations under the License.
  */
 
-using System.IO;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
 using System.Net;
@@ -26,23 +27,9 @@ using System.Net.FtpClient;
 
 namespace PsFtpProvider
 {
-	internal class FtpDriveInfo : PSDriveInfo
+	public class FtpDriveInfo : PSDriveInfo
 	{
-		public Site Site { get; private set; }
-
-		private FtpClient _client;
-		private FtpClient Client
-		{
-			get
-			{
-				if (_client == null)
-				{
-					_client = new FtpClient() { Host = Site.Hostname, Port = Site.Port, Credentials = Site.Credential };
-				}
-
-				return _client;
-			}
-		}
+		private Cache cache;
 
 		internal FtpDriveInfo(Site site, ProviderInfo provider)
 			: base
@@ -52,78 +39,71 @@ namespace PsFtpProvider
 				true
 			)
 		{
-			Site = site;
+			cache = new Cache(site);
 		}
 
-		public bool IsItemContainer(string path)
+		public void ClearCache()
 		{
-			return Client.DirectoryExists(path);
+			cache.Clear();
 		}
 
-		public FtpListItem[] GetChildItems(string path, bool recurse)
+		internal bool IsItemContainer(string path)
 		{
-			if (!recurse)
+			try
 			{
-				return Client.GetListing(path);
+				var item = cache.GetItem(path);
+				return item.Item.Type == FtpFileSystemObjectType.Directory;
 			}
-			else
+			catch
 			{
-				return Client.GetListing(path, FtpListOption.Recursive);
+				return false;
 			}
 		}
 
-		public bool HasChildItems(string path)
+		internal IEnumerable<FtpListItem> GetChildItems(string path)
 		{
-			return Client.GetListing(path).Length > 1;
+			return cache.GetChildItems(path).Select(cacheNode => cacheNode.Item);
 		}
 
-		public FtpListItem NewFile(string path)
+		internal bool HasChildItems(string path)
 		{
-			using (Client.OpenWrite(path))
+			try
 			{
+				return GetChildItems(path).Any();
 			}
-
-			return GetItem(path);
-		}
-
-		public FtpListItem NewDirectory(string path)
-		{
-			Client.CreateDirectory(path);
-			return GetItem(path);
-		}
-
-		public FtpListItem GetItem(string path)
-		{
-			var parent = Path.GetDirectoryName(path);
-			if (parent == null)
+			catch
 			{
-				return new FtpListItem() { FullName = "/" };
+				return false;
 			}
-
-			var list = Client.GetListing(parent);
-
-			return list.First(item => item.FullName == path.Replace('\\', '/'));
 		}
 
-		public void RemoveItem(string path, bool recurse)
+		internal FtpListItem NewFile(string path)
+		{
+			return cache.CreateFile(path).Item;
+		}
+
+		internal FtpListItem NewDirectory(string path)
+		{
+			return cache.CreateDirectory(path).Item;
+		}
+
+		internal FtpListItem GetItem(string path)
+		{
+			return cache.GetItem(path).Item;
+		}
+
+		internal void RemoveItem(string path, bool recurse)
 		{
 			var item = GetItem(path);
 
 			switch (item.Type)
 			{
 				case FtpFileSystemObjectType.File:
-					Client.DeleteFile(path);
+					cache.DeleteFile(item.FullName);
 					break;
 
 				case FtpFileSystemObjectType.Directory:
-					if (!recurse)
-					{
-						Client.DeleteDirectory(path, true);
-					}
-					else
-					{
-						Client.DeleteDirectory(path, true, FtpListOption.Recursive);
-					}
+					cache.DeleteDirectory(item.FullName, recurse);
 					break;
 
 				default:
@@ -131,14 +111,36 @@ namespace PsFtpProvider
 			}
 		}
 
-		public Stream OpenRead(string path)
+		internal ContentReaderWriter GetContentReader(string path, ContentReaderWriterDynamicParameters parameters)
 		{
-			return Client.OpenRead(path, FtpDataType.Binary);
+			var item = cache.GetItem(path);
+			if (item.Item.Type != FtpFileSystemObjectType.File)
+			{
+				throw new ArgumentOutOfRangeException("path", "Item is not a file.");
+			}
+
+			return new ContentReaderWriter(cache.Client.OpenRead(path, FtpDataType.Binary), ContentReaderWriter.Mode.Read, parameters, item.Parent);
 		}
 
-		public Stream OpenWrite(string path)
+		internal ContentReaderWriter GetContentWriter(string path, ContentReaderWriterDynamicParameters parameters)
 		{
-			return Client.OpenWrite(path, FtpDataType.Binary);
+			CacheNode item;
+
+			try
+			{
+				item = cache.GetItem(path);
+			}
+			catch
+			{
+				item = cache.CreateFile(path);
+			}
+
+			if (item.Item.Type != FtpFileSystemObjectType.File)
+			{
+				throw new ArgumentOutOfRangeException("path", "Cannot create a new file with that name because a non-file item of that name already exists.");
+			}
+
+			return new ContentReaderWriter(cache.Client.OpenWrite(path, FtpDataType.Binary), ContentReaderWriter.Mode.Read, parameters, item.Parent);
 		}
 	}
 

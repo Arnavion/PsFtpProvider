@@ -66,6 +66,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cache.cs" />
     <Compile Include="ContentReaderWriter.cs" />
     <Compile Include="FtpDriveInfo.cs" />
     <Compile Include="FtpProvider.cs" />
@@ -76,6 +77,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="PsFtpProvider.psd1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="PsFtpProvider.psm1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="PsFtpProvider.Types.ps1xml">

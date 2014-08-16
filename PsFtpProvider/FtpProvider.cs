@@ -18,7 +18,6 @@
  * limitations under the License.
  */
 
-using Microsoft.PowerShell.Commands;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -38,13 +37,7 @@ namespace PsFtpProvider
 		{
 			get
 			{
-				var result = base.PSDriveInfo as FtpDriveInfo;
-				if (result == null || result.Site == null)
-				{
-					return null;
-				}
-
-				return result;
+				return (FtpDriveInfo)base.PSDriveInfo;
 			}
 		}
 
@@ -89,7 +82,12 @@ namespace PsFtpProvider
 
 		protected override void GetChildItems(string path, bool recurse)
 		{
-			foreach (var item in PSDriveInfo.GetChildItems(path, recurse))
+			if (recurse)
+			{
+				throw new ArgumentOutOfRangeException("recurse", "recurse == true is not supported.");
+			}
+
+			foreach (var item in PSDriveInfo.GetChildItems(path))
 			{
 				WriteItemObject(item, item.FullName, item.Type == FtpFileSystemObjectType.Directory);
 			}
@@ -133,7 +131,7 @@ namespace PsFtpProvider
 		protected override void GetItem(string path)
 		{
 			var item = PSDriveInfo.GetItem(path);
-			WriteItemObject(item, path, item.Type == FtpFileSystemObjectType.Directory);
+			WriteItemObject(item, item.FullName, item.Type == FtpFileSystemObjectType.Directory);
 		}
 
 		protected override bool IsValidPath(string path)
@@ -211,7 +209,7 @@ namespace PsFtpProvider
 
 		public void ClearContent(string path)
 		{
-			using (var writer = new ContentReaderWriter(PSDriveInfo, path, ContentReaderWriter.Mode.Write, null))
+			using (var writer = PSDriveInfo.GetContentWriter(path, DynamicParameters as ContentReaderWriterDynamicParameters))
 			{
 				writer.Truncate();
 			}
@@ -224,10 +222,7 @@ namespace PsFtpProvider
 
 		public IContentReader GetContentReader(string path)
 		{
-			var contentDynamicParameters = DynamicParameters as ContentReaderWriterDynamicParameters;
-			var encoding = contentDynamicParameters != null ? contentDynamicParameters.Encoding : FileSystemCmdletProviderEncoding.Byte;
-
-			return new ContentReaderWriter(PSDriveInfo, path, ContentReaderWriter.Mode.Read, DynamicParameters as ContentReaderWriterDynamicParameters);
+			return PSDriveInfo.GetContentReader(path, DynamicParameters as ContentReaderWriterDynamicParameters);
 		}
 
 		public object GetContentReaderDynamicParameters(string path)
@@ -237,10 +232,7 @@ namespace PsFtpProvider
 
 		public IContentWriter GetContentWriter(string path)
 		{
-			var contentDynamicParameters = DynamicParameters as ContentReaderWriterDynamicParameters;
-			var encoding = (contentDynamicParameters != null ? contentDynamicParameters.Encoding : FileSystemCmdletProviderEncoding.UTF8);
-
-			return new ContentReaderWriter(PSDriveInfo, path, ContentReaderWriter.Mode.Write, DynamicParameters as ContentReaderWriterDynamicParameters);
+			return PSDriveInfo.GetContentWriter(path, DynamicParameters as ContentReaderWriterDynamicParameters);
 		}
 
 		public object GetContentWriterDynamicParameters(string path)

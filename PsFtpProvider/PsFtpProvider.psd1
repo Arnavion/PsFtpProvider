@@ -13,4 +13,8 @@
 	TypesToProcess = @(
 		'PsFtpProvider.Types.ps1xml'
 	)
+
+	NestedModules = @(
+		'PsFtpProvider.psm1'
+	)
 }

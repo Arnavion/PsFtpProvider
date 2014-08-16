@@ -21,7 +21,6 @@
 using Microsoft.PowerShell.Commands;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
@@ -34,18 +33,21 @@ namespace PsFtpProvider
 	{
 		public enum Mode { Read, Write }
 
+		private Mode mode;
+
+		private CacheDirectoryNode parent;
+
 		private Stream stream;
 
 		private Encoding encoding;
 
-		public ContentReaderWriter(FtpDriveInfo drive, string path, Mode mode, ContentReaderWriterDynamicParameters parameters)
+		public ContentReaderWriter(Stream stream, Mode mode, ContentReaderWriterDynamicParameters parameters, CacheDirectoryNode parent)
 		{
-			switch (mode)
-			{
-				case Mode.Read: stream = drive.OpenRead(path); break;
-				case Mode.Write: stream = drive.OpenWrite(path); break;
-				default: throw new ArgumentOutOfRangeException("mode");
-			}
+			this.parent = parent;
+
+			this.mode = mode;
+
+			this.stream = stream;
 
 			var encoding = parameters != null ? parameters.Encoding : FileSystemCmdletProviderEncoding.Byte;
 
@@ -146,6 +148,11 @@ namespace PsFtpProvider
 		public void Dispose()
 		{
 			stream.Dispose();
+
+			if (mode == Mode.Write)
+			{
+				parent.MarkDirty();
+			}
 		}
 
 		#endregion

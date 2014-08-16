@@ -98,6 +98,23 @@ msbuild .\PsFtpProvider.sln
 		```
 
 
+### Caveats of the drive cache
+
+PsFtpProvider drives cache the directory structure to avoid making repeated calls to the FTP server. For example, if you dir in a directory, it will cache the list of children to make future invocations of dir faster. If you then create a file a.txt using another FTP client in the same directory, running dir will continue to show the old directory listing.
+
+In this case, you can use the Clear-FtpDriveCache commandlet to clear the cache for the drive.
+
+```powershell
+# Clear the current drive's cache
+Clear-FtpDriveCache
+
+# Clear the cache of a particular drive
+Clear-FtpDriveCache $(Get-PSDrive MyFtpSite)
+```
+
+In some cases, this cache self-heals. For example, in the above example, dir would not show the new file until you cleared the cache and ran dir again. However, if you didn't clear the cache and tried to do ```cat a.txt```, PsFtpProvider would try to look up a.txt in the cache, fail to find it, and refresh the cache automatically to see if it exists now. After that, you would see the file in the output of dir.
+
+
 ### Links
 
 * [GitHub](https://github.com/Arnavion/PsFtpProvider)
