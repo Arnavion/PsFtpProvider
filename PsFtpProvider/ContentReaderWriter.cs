@@ -147,15 +147,21 @@ namespace PsFtpProvider
 				}
 			}
 
+			if (content[0] is PSObject)
+			{
+				content = content.Cast<PSObject>().Select(obj => obj.BaseObject).ToArray();
+			}
+
 			byte[] bytes;
-			if (content[0] is string && content.Count == 1)
+
+			if (content[0] is string)
 			{
 				if (encoding == null)
 				{
 					encoding = Encoding.UTF8;
 				}
 
-				bytes = encoding.GetBytes((string)content[0]);
+				bytes = content.Cast<string>().SelectMany(str => encoding.GetBytes(str + "\n")).ToArray();
 			}
 			else if (content[0] is byte)
 			{

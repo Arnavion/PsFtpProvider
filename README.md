@@ -97,6 +97,20 @@ msbuild .\PsFtpProvider.sln
 		Set-Content ./file.txt 'aaa'
 		```
 
+	* Upload a file
+
+		```powershell
+		# Upload a binary file
+		Set-Content './file.bin' -Encoding Byte $(Get-Content -Encoding Byte 'C:\file.bin')
+
+		# Upload a text file. Get-Content will return one string per line and Set-Content will add a `n at the end of each.
+		# If you don't want this, use binary mode as in the above example
+		Set-Content './file.txt' -Encoding UTF8 $(Get-Content -Encoding UTF8 'C:\file.txt')
+
+		# Upload a text file. Let PS guess the encoding of the input file. Output encoding still defaults to UTF8 and each line is terminated with a `n.
+		Set-Content './file.txt' $(Get-Content 'C:\file.txt')
+		```
+
 	* Append to a file
 
 		```powershell
