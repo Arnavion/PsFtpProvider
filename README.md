@@ -68,15 +68,15 @@ msbuild .\PsFtpProvider.sln
 		cat ./file.txt -Encoding UTF8
 		```
 
-	* Save a file to a local drive
+	* Download a file
 
 		```powershell
 		# Can't use Copy-Item because it doesn't support the source and target being different providers.
 
-		# Save a binary file
+		# Download a binary file
 		[System.IO.File]::WriteAllBytes('C:\file.bin', $(cat './file.bin'))
 
-		# Save a text file
+		# Download a text file
 		Set-Content C:\file.txt $(cat './file.txt' -Encoding UTF8) -Encoding UTF8
 
 		# You don't need to cd to the site drive first. Fully qualified paths work too.
@@ -84,16 +84,16 @@ msbuild .\PsFtpProvider.sln
 		Set-Content C:\file.txt $(cat 'MyFtpSite:/file.txt' -Encoding UTF8) -Encoding UTF8
 		```
 
-	* Write a file
+	* Set a file's contents
 
 		```powershell
-		# Write a binary file
+		# Set a binary file's contents
 		Set-Content ./file.bin [System.Text.Encoding]::UTF8.GetBytes('aaa')
 
-		# Write a text file in the given encoding
+		# Set a text file's contents in the given encoding
 		Set-Content ./file.txt 'aaa' -Encoding UTF8
 
-		# Write a text file without specifying the encoding. Defaults to UTF-8.
+		# Set a text file's contents without specifying the encoding. Defaults to UTF-8.
 		Set-Content ./file.txt 'aaa'
 		```
 
