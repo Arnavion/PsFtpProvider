@@ -102,21 +102,20 @@ namespace PsFtpProvider
 
 			var read = stream.Read(buffer, 0, (int)Math.Min(readCount, buffer.Length));
 			var result = new byte[read];
-			Array.Copy(buffer, result, read);
 
 			if (read == 0)
 			{
 				return result;
 			}
 
-			if (encoding == null || result.Length == 0)
+			Array.Copy(buffer, result, read);
+
+			if (encoding == null)
 			{
 				return result;
 			}
-			else
-			{
-				return new[] { encoding.GetString(result) };
-			}
+
+			return new[] { encoding.GetString(result) };
 		}
 
 		#endregion
