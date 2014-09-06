@@ -177,7 +177,17 @@ namespace PsFtpProvider
 				result.Add(copy);
 			}
 
-			return result.SelectMany(b => b).ToArray();
+			var totalBytes = result.Sum(bytes => bytes.Length);
+			var resultArray = new byte[totalBytes];
+
+			var index = 0;
+			foreach (var bytes in result)
+			{
+				Buffer.BlockCopy(bytes, 0, resultArray, index, bytes.Length);
+				index += bytes.Length;
+			}
+
+			return resultArray;
 		}
 
 		private byte? ReadByte()
