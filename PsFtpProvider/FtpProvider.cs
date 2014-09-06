@@ -209,7 +209,7 @@ namespace PsFtpProvider
 
 		public void ClearContent(string path)
 		{
-			using (var writer = PSDriveInfo.GetContentWriter(path, DynamicParameters as ContentReaderWriterDynamicParameters))
+			using (var writer = PSDriveInfo.GetContentWriter(path, DynamicParameters as ContentWriterDynamicParameters))
 			{
 				writer.Truncate();
 			}
@@ -222,22 +222,22 @@ namespace PsFtpProvider
 
 		public IContentReader GetContentReader(string path)
 		{
-			return PSDriveInfo.GetContentReader(path, DynamicParameters as ContentReaderWriterDynamicParameters);
+			return PSDriveInfo.GetContentReader(path, DynamicParameters as ContentReaderDynamicParameters);
 		}
 
 		public object GetContentReaderDynamicParameters(string path)
 		{
-			return new ContentReaderWriterDynamicParameters();
+			return new ContentReaderDynamicParameters();
 		}
 
 		public IContentWriter GetContentWriter(string path)
 		{
-			return PSDriveInfo.GetContentWriter(path, DynamicParameters as ContentReaderWriterDynamicParameters);
+			return PSDriveInfo.GetContentWriter(path, DynamicParameters as ContentWriterDynamicParameters);
 		}
 
 		public object GetContentWriterDynamicParameters(string path)
 		{
-			return new ContentReaderWriterDynamicParameters();
+			return new ContentWriterDynamicParameters();
 		}
 
 		#endregion

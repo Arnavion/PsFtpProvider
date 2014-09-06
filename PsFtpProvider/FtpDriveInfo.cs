@@ -111,7 +111,7 @@ namespace PsFtpProvider
 			}
 		}
 
-		internal ContentReader GetContentReader(string path, ContentReaderWriterDynamicParameters parameters)
+		internal ContentReader GetContentReader(string path, ContentReaderDynamicParameters parameters)
 		{
 			var item = cache.GetItem(path);
 			if (item.Item.Type != FtpFileSystemObjectType.File)
@@ -122,7 +122,7 @@ namespace PsFtpProvider
 			return new ContentReader(item, parameters, cache.Client);
 		}
 
-		internal ContentWriter GetContentWriter(string path, ContentReaderWriterDynamicParameters parameters)
+		internal ContentWriter GetContentWriter(string path, ContentWriterDynamicParameters parameters)
 		{
 			CacheNode item;
 

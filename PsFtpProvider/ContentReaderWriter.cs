@@ -21,6 +21,7 @@
 using Microsoft.PowerShell.Commands;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
@@ -36,11 +37,11 @@ namespace PsFtpProvider
 
 		protected FtpClient Client { get; private set; }
 
-		protected Encoding Encoding { get; set; }
+		protected Encoding Encoding { get; private set; }
 
 		protected Stream Stream { get; set; }
 
-		public ContentReaderWriterBase(CacheNode item, ContentReaderWriterDynamicParameters parameters, FtpClient client)
+		public ContentReaderWriterBase(CacheNode item, ContentReaderWriterDynamicParametersBase parameters, FtpClient client)
 		{
 			Item = item;
 
@@ -82,9 +83,21 @@ namespace PsFtpProvider
 
 	internal class ContentReader : ContentReaderWriterBase, IContentReader
 	{
-		public ContentReader(CacheNode item, ContentReaderWriterDynamicParameters parameters, FtpClient client)
+		private Decoder decoder;
+		private bool raw;
+
+		public ContentReader(CacheNode item, ContentReaderDynamicParameters parameters, FtpClient client)
 			: base(item, parameters, client)
 		{
+			if (Encoding != null)
+			{
+				decoder = Encoding.GetDecoder();
+			}
+
+			if (parameters != null)
+			{
+				raw = parameters.Raw;
+			}
 		}
 
 		public IList Read(long readCount)
@@ -94,29 +107,186 @@ namespace PsFtpProvider
 				Stream = Client.OpenRead(Item.Item.FullName, FtpDataType.Binary);
 			}
 
+			if (decoder == null)
+			{
+				if (raw)
+				{
+					var bytes = ReadRawBytes();
+					if (bytes.Length == 0)
+					{
+						return new byte[] { };
+					}
+
+					return new[] { bytes };
+				}
+
+				if (readCount == 1)
+				{
+					var b = ReadByte();
+					if (b == null)
+					{
+						return new byte[0];
+					}
+
+					return new byte[] { (byte)b };
+				}
+
+				return ReadBytes(readCount);
+			}
+			else
+			{
+				string result;
+
+				if (raw)
+				{
+					result = ReadRawString();
+				}
+				else
+				{
+					result = ReadString();
+				}
+
+				if (result == null)
+				{
+					return new string[0];
+				}
+
+				return new[] { result };
+			}
+		}
+
+		private byte[] ReadRawBytes()
+		{
+			var result = new List<byte[]>();
+
 			var buffer = new byte[4096];
 
-			if (readCount <= 0 || Encoding != null)
+			for (; ; )
+			{
+				var read = Stream.Read(buffer, 0, buffer.Length);
+
+				if (read == 0)
+				{
+					break;
+				}
+
+				var copy = new byte[read];
+				Array.Copy(buffer, copy, copy.Length);
+				result.Add(copy);
+			}
+
+			return result.SelectMany(b => b).ToArray();
+		}
+
+		private byte? ReadByte()
+		{
+			var b = Stream.ReadByte();
+
+			if (b == -1)
+			{
+				return null;
+			}
+
+			return (byte)b;
+		}
+
+		private byte[] ReadBytes(long readCount)
+		{
+			if (readCount <= 0)
 			{
 				readCount = long.MaxValue;
 			}
 
-			var read = Stream.Read(buffer, 0, (int)Math.Min(readCount, buffer.Length));
-			var result = new byte[read];
-
-			if (read == 0)
+			if (readCount > 4096)
 			{
-				return result;
+				readCount = 4096;
 			}
 
-			Array.Copy(buffer, result, read);
+			var buffer = new byte[(int)readCount];
 
-			if (Encoding == null)
+			var read = Stream.Read(buffer, 0, buffer.Length);
+
+			if (read == buffer.Length)
 			{
-				return result;
+				return buffer;
 			}
 
-			return new[] { Encoding.GetString(result) };
+			var slice = new byte[read];
+
+			Array.Copy(buffer, slice, read);
+
+			return slice;
+		}
+
+		private string ReadRawString()
+		{
+			var result = new StringBuilder();
+
+			var buffer = new byte[4096];
+
+			for (; ; )
+			{
+				var read = Stream.Read(buffer, 0, buffer.Length);
+
+				var numChars = decoder.GetCharCount(buffer, 0, read, read == 0);
+				if (read == 0 && numChars == 0)
+				{
+					break;
+				}
+
+				var chars = new char[numChars];
+				decoder.GetChars(buffer, 0, read, chars, 0, read == 0);
+				result.Append(chars);
+			}
+
+			var resultString = result.ToString();
+
+			if (resultString == "")
+			{
+				return null;
+			}
+
+			return resultString;
+		}
+
+		private string ReadString()
+		{
+			var result = new StringBuilder();
+
+			var buffer = new byte[4096];
+
+			for (; ; )
+			{
+				for (var i = 0; i < buffer.Length; i++)
+				{
+					var b = Stream.ReadByte();
+
+					if (b == -1 && i == 0 && result.Length == 0)
+					{
+						return null;
+					}
+
+					if (b == '\r' || b == '\n' || b == -1)
+					{
+						var numChars = decoder.GetCharCount(buffer, 0, i, true);
+						var chars = new char[numChars];
+						decoder.GetChars(buffer, 0, i, chars, 0, true);
+						result.Append(chars);
+
+						return result.ToString();
+					}
+
+					buffer[i] = (byte)b;
+				}
+
+				// Ran out of buffer space. Put whatever we got so far into result, leave half-read characters in decoder, and restart reading into the buffer from index 0
+				{
+					var numChars = decoder.GetCharCount(buffer, 0, buffer.Length, false);
+					var chars = new char[numChars];
+					decoder.GetChars(buffer, 0, buffer.Length, chars, 0, false);
+					result.Append(chars);
+				}
+			}
 		}
 	}
 
@@ -126,9 +296,15 @@ namespace PsFtpProvider
 
 		private Mode mode = Mode.Write;
 
-		public ContentWriter(CacheNode item, ContentReaderWriterDynamicParameters parameters, FtpClient client)
+		private Encoder encoder;
+
+		public ContentWriter(CacheNode item, ContentWriterDynamicParameters parameters, FtpClient client)
 			: base(item, parameters, client)
 		{
+			if (Encoding != null)
+			{
+				encoder = Encoding.GetEncoder();
+			}
 		}
 
 		public IList Write(IList content)
@@ -160,29 +336,56 @@ namespace PsFtpProvider
 				content = content.Cast<PSObject>().Select(obj => obj.BaseObject).ToArray();
 			}
 
-			byte[] bytes;
-
 			if (content[0] is string)
 			{
-				if (Encoding == null)
+				if (encoder == null)
 				{
-					Encoding = Encoding.UTF8;
+					encoder = Encoding.UTF8.GetEncoder();
 				}
 
-				bytes = content.Cast<string>().SelectMany(str => Encoding.GetBytes(str + "\n")).ToArray();
+				foreach (string str in content)
+				{
+					var chars = (str + "\n").ToCharArray();
+					var numBytes = encoder.GetByteCount(chars, 0, chars.Length, false);
+
+					var bytes = new byte[Math.Min(numBytes, 4096)];
+					var convertedChars = 0;
+
+					var completed = false;
+					while (!completed)
+					{
+						int charsUsed;
+						int bytesUsed;
+
+						encoder.Convert(chars, convertedChars, chars.Length - convertedChars, bytes, 0, bytes.Length, false, out charsUsed, out bytesUsed, out completed);
+						convertedChars += charsUsed;
+
+						Stream.Write(bytes, 0, bytesUsed);
+					}
+				}
 			}
 			else if (content[0] is byte)
 			{
-				bytes = content.Cast<byte>().ToArray();
+				var bytes = content as byte[];
+				if (bytes == null)
+				{
+					bytes = content.Cast<byte>().ToArray();
+				}
+
+				var bytesWritten = 0;
+				while (bytesWritten < bytes.Length)
+				{
+					var written = Math.Min(bytes.Length - bytesWritten, 4096);
+					Stream.Write(bytes, bytesWritten, written);
+					bytesWritten += written;
+				}
 			}
 			else
 			{
 				throw new ArgumentOutOfRangeException("content");
 			}
 
-			Stream.Write(bytes, 0, bytes.Length);
-
-			return bytes;
+			return content;
 		}
 
 		public void Truncate()
@@ -237,7 +440,7 @@ namespace PsFtpProvider
 		}
 	}
 
-	internal class ContentReaderWriterDynamicParameters
+	internal abstract class ContentReaderWriterDynamicParametersBase
 	{
 		private FileSystemCmdletProviderEncoding encoding;
 
@@ -253,5 +456,15 @@ namespace PsFtpProvider
 				encoding = value;
 			}
 		}
+	}
+
+	internal class ContentReaderDynamicParameters : ContentReaderWriterDynamicParametersBase
+	{
+		[Parameter]
+		public SwitchParameter Raw { get; set; }
+	}
+
+	internal class ContentWriterDynamicParameters : ContentReaderWriterDynamicParametersBase
+	{
 	}
 }
