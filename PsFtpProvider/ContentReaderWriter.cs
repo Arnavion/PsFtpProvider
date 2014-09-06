@@ -30,77 +30,78 @@ using System.Text;
 
 namespace PsFtpProvider
 {
-	internal class ContentReaderWriter : IContentReader, IContentWriter
+	internal abstract class ContentReaderWriterBase
 	{
-		public enum Mode { Read, Write, Append }
+		protected CacheNode Item { get; private set; }
 
-		private CacheNode item;
+		protected FtpClient Client { get; private set; }
 
-		private Mode mode;
+		protected Encoding Encoding { get; set; }
 
-		private Encoding encoding;
+		protected Stream Stream { get; set; }
 
-		private FtpClient client;
-
-		private Stream stream;
-
-		public ContentReaderWriter(CacheNode item, Mode mode, ContentReaderWriterDynamicParameters parameters, FtpClient client)
+		public ContentReaderWriterBase(CacheNode item, ContentReaderWriterDynamicParameters parameters, FtpClient client)
 		{
-			this.item = item;
+			Item = item;
 
-			this.mode = mode;
-
-			this.client = client;
+			Client = client;
 
 			var encoding = parameters != null ? parameters.Encoding : FileSystemCmdletProviderEncoding.Byte;
 
 			if (encoding != FileSystemCmdletProviderEncoding.Byte)
 			{
-				this.encoding = new FileSystemContentWriterDynamicParameters() { Encoding = encoding }.EncodingType;
-			}
-			else
-			{
-				this.encoding = null;
+				Encoding = new FileSystemContentWriterDynamicParameters() { Encoding = encoding }.EncodingType;
 			}
 		}
 
-		public void Truncate()
+		public virtual void Seek(long offset, SeekOrigin origin)
 		{
-			if (stream == null)
-			{
-				if (mode != Mode.Write)
-				{
-					throw new InvalidOperationException("Cannot write to a non-writable stream.");
-				}
-
-				stream = client.OpenWrite(item.Item.FullName, FtpDataType.Binary);
-			}
-
-			stream.SetLength(0);
+			throw new InvalidOperationException("Seeking is not supported.");
 		}
 
-		#region IContentReader members
+		public virtual void Close()
+		{
+			if (Stream == null)
+			{
+				return;
+			}
+
+			Stream.Close();
+		}
+
+		public virtual void Dispose()
+		{
+			if (Stream == null)
+			{
+				return;
+			}
+
+			Stream.Dispose();
+		}
+	}
+
+	internal class ContentReader : ContentReaderWriterBase, IContentReader
+	{
+		public ContentReader(CacheNode item, ContentReaderWriterDynamicParameters parameters, FtpClient client)
+			: base(item, parameters, client)
+		{
+		}
 
 		public IList Read(long readCount)
 		{
-			if (stream == null)
+			if (Stream == null)
 			{
-				if (mode != Mode.Read)
-				{
-					throw new InvalidOperationException("Cannot read from a non-readable stream.");
-				}
-
-				stream = client.OpenRead(item.Item.FullName, FtpDataType.Binary);
+				Stream = Client.OpenRead(Item.Item.FullName, FtpDataType.Binary);
 			}
 
 			var buffer = new byte[4096];
 
-			if (readCount <= 0 || encoding != null)
+			if (readCount <= 0 || Encoding != null)
 			{
 				readCount = long.MaxValue;
 			}
 
-			var read = stream.Read(buffer, 0, (int)Math.Min(readCount, buffer.Length));
+			var read = Stream.Read(buffer, 0, (int)Math.Min(readCount, buffer.Length));
 			var result = new byte[read];
 
 			if (read == 0)
@@ -110,34 +111,42 @@ namespace PsFtpProvider
 
 			Array.Copy(buffer, result, read);
 
-			if (encoding == null)
+			if (Encoding == null)
 			{
 				return result;
 			}
 
-			return new[] { encoding.GetString(result) };
+			return new[] { Encoding.GetString(result) };
 		}
+	}
 
-		#endregion
+	internal class ContentWriter : ContentReaderWriterBase, IContentWriter
+	{
+		private enum Mode { Write, Append }
 
-		#region IContentWriter members
+		private Mode mode = Mode.Write;
+
+		public ContentWriter(CacheNode item, ContentReaderWriterDynamicParameters parameters, FtpClient client)
+			: base(item, parameters, client)
+		{
+		}
 
 		public IList Write(IList content)
 		{
-			if (stream == null)
+			if (Stream == null)
 			{
 				switch (mode)
 				{
 					case Mode.Write:
-						stream = client.OpenWrite(item.Item.FullName, FtpDataType.Binary);
+						Stream = Client.OpenWrite(Item.Item.FullName, FtpDataType.Binary);
 						break;
 
 					case Mode.Append:
-						stream = client.OpenAppend(item.Item.FullName, FtpDataType.Binary);
+						Stream = Client.OpenAppend(Item.Item.FullName, FtpDataType.Binary);
 						break;
 
 					default:
-						throw new InvalidOperationException("Cannot write to a non-writable stream.");
+						throw new InvalidOperationException(string.Format("Unknown mode {0}", mode));
 				}
 			}
 
@@ -155,12 +164,12 @@ namespace PsFtpProvider
 
 			if (content[0] is string)
 			{
-				if (encoding == null)
+				if (Encoding == null)
 				{
-					encoding = Encoding.UTF8;
+					Encoding = Encoding.UTF8;
 				}
 
-				bytes = content.Cast<string>().SelectMany(str => encoding.GetBytes(str + "\n")).ToArray();
+				bytes = content.Cast<string>().SelectMany(str => Encoding.GetBytes(str + "\n")).ToArray();
 			}
 			else if (content[0] is byte)
 			{
@@ -171,16 +180,22 @@ namespace PsFtpProvider
 				throw new ArgumentOutOfRangeException("content");
 			}
 
-			stream.Write(bytes, 0, bytes.Length);
+			Stream.Write(bytes, 0, bytes.Length);
 
 			return bytes;
 		}
 
-		#endregion
+		public void Truncate()
+		{
+			if (Stream == null)
+			{
+				Stream = Client.OpenWrite(Item.Item.FullName, FtpDataType.Binary);
+			}
 
-		#region Common members
+			Stream.SetLength(0);
+		}
 
-		public void Seek(long offset, SeekOrigin origin)
+		public override void Seek(long offset, SeekOrigin origin)
 		{
 			if (mode == Mode.Write && offset == 0 && origin == SeekOrigin.End)
 			{
@@ -188,40 +203,38 @@ namespace PsFtpProvider
 				return;
 			}
 
-			throw new InvalidOperationException("Seeking is not supported.");
+			base.Seek(offset, origin);
 		}
 
-		public void Close()
+		public override void Close()
 		{
-			if (stream == null)
+			base.Close();
+
+			if (Stream == null)
 			{
 				return;
 			}
 
-			stream.Close();
-
 			if (mode == Mode.Write || mode == Mode.Append)
 			{
-				item.Parent.MarkDirty();
+				Item.Parent.MarkDirty();
 			}
 		}
 
-		public void Dispose()
+		public override void Dispose()
 		{
-			if (stream == null)
+			base.Dispose();
+
+			if (Stream == null)
 			{
 				return;
 			}
 
-			stream.Dispose();
-
 			if (mode == Mode.Write || mode == Mode.Append)
 			{
-				item.Parent.MarkDirty();
+				Item.Parent.MarkDirty();
 			}
 		}
-
-		#endregion
 	}
 
 	internal class ContentReaderWriterDynamicParameters

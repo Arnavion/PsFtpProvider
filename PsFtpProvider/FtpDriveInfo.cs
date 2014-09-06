@@ -111,7 +111,7 @@ namespace PsFtpProvider
 			}
 		}
 
-		internal ContentReaderWriter GetContentReader(string path, ContentReaderWriterDynamicParameters parameters)
+		internal ContentReader GetContentReader(string path, ContentReaderWriterDynamicParameters parameters)
 		{
 			var item = cache.GetItem(path);
 			if (item.Item.Type != FtpFileSystemObjectType.File)
@@ -119,10 +119,10 @@ namespace PsFtpProvider
 				throw new ArgumentOutOfRangeException("path", "Item is not a file.");
 			}
 
-			return new ContentReaderWriter(item, ContentReaderWriter.Mode.Read, parameters, cache.Client);
+			return new ContentReader(item, parameters, cache.Client);
 		}
 
-		internal ContentReaderWriter GetContentWriter(string path, ContentReaderWriterDynamicParameters parameters)
+		internal ContentWriter GetContentWriter(string path, ContentReaderWriterDynamicParameters parameters)
 		{
 			CacheNode item;
 
@@ -140,7 +140,7 @@ namespace PsFtpProvider
 				throw new ArgumentOutOfRangeException("path", "Cannot create a new file with that name because a non-file item of that name already exists.");
 			}
 
-			return new ContentReaderWriter(item, ContentReaderWriter.Mode.Write, parameters, cache.Client);
+			return new ContentWriter(item, parameters, cache.Client);
 		}
 	}
 
