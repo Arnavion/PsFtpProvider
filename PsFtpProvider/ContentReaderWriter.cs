@@ -225,7 +225,7 @@ namespace PsFtpProvider
 
 			var slice = new byte[read];
 
-			Array.Copy(buffer, slice, read);
+			Buffer.BlockCopy(buffer, 0, slice, 0, read);
 
 			return slice;
 		}
