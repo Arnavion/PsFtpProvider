@@ -124,11 +124,6 @@ namespace PsFtpProvider
 
 		public IList Write(IList content)
 		{
-			if (content.Count <= 0)
-			{
-				return content;
-			}
-
 			if (stream == null)
 			{
 				switch (mode)
@@ -144,6 +139,11 @@ namespace PsFtpProvider
 					default:
 						throw new InvalidOperationException("Cannot write to a non-writable stream.");
 				}
+			}
+
+			if (content.Count <= 0)
+			{
+				return content;
 			}
 
 			if (content[0] is PSObject)
