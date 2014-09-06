@@ -34,7 +34,7 @@ namespace PsFtpProvider
 		internal FtpDriveInfo(Site site, ProviderInfo provider)
 			: base
 			(
-				site.Name, provider, "\\", "FTP Provider for " + site.Hostname,
+				site.Name, provider, "", "FTP Provider for " + site.Hostname,
 				site.Credential != null ? new PSCredential(site.Credential.UserName, site.Credential.SecurePassword) : null,
 				true
 			)

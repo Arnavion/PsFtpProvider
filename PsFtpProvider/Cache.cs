@@ -214,7 +214,7 @@ namespace PsFtpProvider
 
 			if (path.Length < 1 || path[0] != '/')
 			{
-				throw new ArgumentOutOfRangeException("path", "path is not well-formed.");
+				path = "/" + path;
 			}
 
 			return path;
