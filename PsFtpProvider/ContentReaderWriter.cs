@@ -33,6 +33,8 @@ namespace PsFtpProvider
 {
 	internal abstract class ContentReaderWriterBase
 	{
+		protected const int ByteBufferSize = 4096;
+
 		protected CacheNode Item { get; private set; }
 
 		protected FtpClient Client { get; private set; }
@@ -159,7 +161,7 @@ namespace PsFtpProvider
 		{
 			var result = new List<byte[]>();
 
-			var buffer = new byte[4096];
+			var buffer = new byte[ByteBufferSize];
 
 			for (; ; )
 			{
@@ -197,9 +199,9 @@ namespace PsFtpProvider
 				readCount = long.MaxValue;
 			}
 
-			if (readCount > 4096)
+			if (readCount > ByteBufferSize)
 			{
-				readCount = 4096;
+				readCount = ByteBufferSize;
 			}
 
 			var buffer = new byte[(int)readCount];
@@ -222,7 +224,7 @@ namespace PsFtpProvider
 		{
 			var result = new StringBuilder();
 
-			var buffer = new byte[4096];
+			var buffer = new byte[ByteBufferSize];
 
 			for (; ; )
 			{
@@ -253,7 +255,7 @@ namespace PsFtpProvider
 		{
 			var result = new StringBuilder();
 
-			var buffer = new byte[4096];
+			var buffer = new byte[ByteBufferSize];
 
 			for (; ; )
 			{
@@ -348,7 +350,7 @@ namespace PsFtpProvider
 					var chars = (str + "\n").ToCharArray();
 					var numBytes = encoder.GetByteCount(chars, 0, chars.Length, false);
 
-					var bytes = new byte[Math.Min(numBytes, 4096)];
+					var bytes = new byte[Math.Min(numBytes, ByteBufferSize)];
 					var convertedChars = 0;
 
 					var completed = false;
@@ -375,7 +377,7 @@ namespace PsFtpProvider
 				var bytesWritten = 0;
 				while (bytesWritten < bytes.Length)
 				{
-					var written = Math.Min(bytes.Length - bytesWritten, 4096);
+					var written = Math.Min(bytes.Length - bytesWritten, ByteBufferSize);
 					Stream.Write(bytes, bytesWritten, written);
 					bytesWritten += written;
 				}
