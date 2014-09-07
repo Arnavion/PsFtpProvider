@@ -389,7 +389,7 @@ namespace PsFtpProvider
 
 				if (!Children.ContainsKey(name))
 				{
-					throw new ArgumentOutOfRangeException("name", string.Format("Cannot delete file named {0} because it doesn't exist.", name));
+					throw new ArgumentOutOfRangeException("name", string.Format("Cannot delete directory named {0} because it doesn't exist.", name));
 				}
 			}
 
