@@ -212,6 +212,8 @@ namespace PsFtpProvider
 		{
 			path = path.Replace('\\', '/');
 
+			path = path.TrimEnd('/');
+
 			if (path.Length < 1 || path[0] != '/')
 			{
 				path = "/" + path;
