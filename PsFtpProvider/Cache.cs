@@ -245,7 +245,7 @@ namespace PsFtpProvider
 			{
 				if (needsRefresh)
 				{
-					var listing = client.GetListing(Item.FullName);
+					var listing = client.GetListing(Item.FullName, FtpListOption.Modify | FtpListOption.Size);
 
 					if (listing.Length == 1 && listing[0].FullName == Item.FullName)
 					{
