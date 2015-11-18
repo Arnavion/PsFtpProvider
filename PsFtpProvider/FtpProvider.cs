@@ -50,13 +50,15 @@ namespace PsFtpProvider
 				return new Collection<PSDriveInfo>(
 					(
 						from server in root.Element("Servers").Elements("Server")
+						let passwordElement = server.Element("Pass")
+						let password = passwordElement.Attribute("encoding")?.Value == "base64" ? new string(Convert.FromBase64String(passwordElement.Value).Select(b => (char)b).ToArray()) : passwordElement.Value
 						select new FtpDriveInfo
 						(
 							new Site
 							(
 								string.Join("", from textNode in server.Nodes().OfType<XText>() select textNode.Value.Trim()),
 								server.Element("Host").Value, ushort.Parse(server.Element("Port").Value),
-								new NetworkCredential(server.Element("User").Value, server.Element("Pass").Value)
+								new NetworkCredential(server.Element("User").Value, password)
 							),
 							ProviderInfo
 						)
