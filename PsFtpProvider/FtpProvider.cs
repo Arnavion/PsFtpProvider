@@ -84,7 +84,7 @@ namespace PsFtpProvider
 		{
 			if (recurse)
 			{
-				throw new ArgumentOutOfRangeException("recurse", "recurse == true is not supported.");
+				throw new ArgumentOutOfRangeException(nameof(recurse), "recurse == true is not supported.");
 			}
 
 			foreach (var item in PSDriveInfo.GetChildItems(path))
@@ -113,7 +113,7 @@ namespace PsFtpProvider
 					break;
 
 				default:
-					throw new ArgumentOutOfRangeException("itemTypeName");
+					throw new ArgumentOutOfRangeException(nameof(itemTypeName));
 			}
 
 			WriteItemObject(newItem, path, newItem.Type == FtpFileSystemObjectType.Directory);
@@ -166,7 +166,7 @@ namespace PsFtpProvider
 		{
 			if (drive == null)
 			{
-				throw new ArgumentNullException();
+				throw new ArgumentNullException(nameof(drive));
 			}
 
 			var result = drive as FtpDriveInfo;
@@ -190,7 +190,7 @@ namespace PsFtpProvider
 				);
 			}
 
-			throw new ArgumentOutOfRangeException("drive");
+			throw new ArgumentOutOfRangeException(nameof(drive));
 		}
 
 		protected override object NewDriveDynamicParameters()

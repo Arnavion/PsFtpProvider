@@ -394,7 +394,7 @@ namespace PsFtpProvider
 			}
 			else
 			{
-				throw new ArgumentOutOfRangeException("content");
+				throw new ArgumentOutOfRangeException(nameof(content));
 			}
 
 			return content;

@@ -66,26 +66,24 @@ namespace PsFtpProvider
 			foreach (var component in components)
 			{
 				var currentDirectory = current as CacheDirectoryNode;
-				if (currentDirectory != null)
-				{
-					var child = currentDirectory.GetChild(component);
-					if (child == null)
-					{
-						throw new ArgumentOutOfRangeException("path", string.Format("Item {0} does not exist under {1}", component, current.Item.FullName));
-					}
-
-					current = child;
-				}
-				else
+				if (currentDirectory == null)
 				{
 					break;
 				}
+
+				var child = currentDirectory.GetChild(component);
+				if (child == null)
+				{
+					throw new ArgumentOutOfRangeException(nameof(path), string.Format("Item {0} does not exist under {1}", component, current.Item.FullName));
+				}
+
+				current = child;
 			}
 
 			if (current.Item.FullName != path)
 			{
 				// Found a file with the same name as what should've been a directory.
-				throw new ArgumentOutOfRangeException("path", string.Format("{0} is not a directory.", current.Item.FullName));
+				throw new ArgumentOutOfRangeException(nameof(path), string.Format("{0} is not a directory.", current.Item.FullName));
 			}
 
 			return current;
@@ -98,7 +96,7 @@ namespace PsFtpProvider
 			var directory = item as CacheDirectoryNode;
 			if (directory == null)
 			{
-				throw new ArgumentOutOfRangeException("path", string.Format("{0} is not a directory.", path));
+				throw new ArgumentOutOfRangeException(nameof(path), string.Format("{0} is not a directory.", path));
 			}
 
 			return directory.GetChildren();
@@ -123,7 +121,7 @@ namespace PsFtpProvider
 				}
 				else
 				{
-					throw new ArgumentOutOfRangeException("path", string.Format("Cannot create a directory named {0} because a file of that name already exists.", component));
+					throw new ArgumentOutOfRangeException(nameof(path), string.Format("Cannot create a directory named {0} because a file of that name already exists.", component));
 				}
 			}
 
@@ -153,7 +151,7 @@ namespace PsFtpProvider
 				}
 				else
 				{
-					throw new ArgumentOutOfRangeException("path", string.Format("Cannot create a directory named {0} because a file of that name already exists.", component));
+					throw new ArgumentOutOfRangeException(nameof(path), string.Format("Cannot create a directory named {0} because a file of that name already exists.", component));
 				}
 			}
 
@@ -175,7 +173,7 @@ namespace PsFtpProvider
 				var child = current.GetChild(component);
 				if (child == null || !(child is CacheDirectoryNode))
 				{
-					throw new ArgumentOutOfRangeException("path", string.Format("Directory {0} does not exist.", component));
+					throw new ArgumentOutOfRangeException(nameof(path), string.Format("Directory {0} does not exist.", component));
 				}
 
 				current = (CacheDirectoryNode)child;
@@ -199,7 +197,7 @@ namespace PsFtpProvider
 				var child = current.GetChild(component);
 				if (child == null || !(child is CacheDirectoryNode))
 				{
-					throw new ArgumentOutOfRangeException("path", string.Format("Directory {0} does not exist.", component));
+					throw new ArgumentOutOfRangeException(nameof(path), string.Format("Directory {0} does not exist.", component));
 				}
 
 				current = (CacheDirectoryNode)child;
@@ -263,7 +261,7 @@ namespace PsFtpProvider
 								case FtpFileSystemObjectType.Directory:
 									return new CacheDirectoryNode(child, this, client);
 								default:
-									throw new ArgumentOutOfRangeException("child", "Found child of unexpected type " + child.Type);
+									throw new ArgumentOutOfRangeException(nameof(child), "Found child of unexpected type " + child.Type);
 							}
 						});
 
@@ -331,7 +329,7 @@ namespace PsFtpProvider
 
 				if (Children.ContainsKey(name))
 				{
-					throw new ArgumentOutOfRangeException("name", string.Format("Cannot create file named {0} because an item of that name already exists.", name));
+					throw new ArgumentOutOfRangeException(nameof(name), string.Format("Cannot create file named {0} because an item of that name already exists.", name));
 				}
 			}
 
@@ -353,7 +351,7 @@ namespace PsFtpProvider
 
 				if (Children.ContainsKey(name))
 				{
-					throw new ArgumentOutOfRangeException("name", string.Format("Cannot create directory named {0} because an item of that name already exists.", name));
+					throw new ArgumentOutOfRangeException(nameof(name), string.Format("Cannot create directory named {0} because an item of that name already exists.", name));
 				}
 			}
 
@@ -373,7 +371,7 @@ namespace PsFtpProvider
 
 				if (!Children.ContainsKey(name))
 				{
-					throw new ArgumentOutOfRangeException("name", string.Format("Cannot delete file named {0} because it doesn't exist.", name));
+					throw new ArgumentOutOfRangeException(nameof(name), string.Format("Cannot delete file named {0} because it doesn't exist.", name));
 				}
 			}
 
@@ -391,7 +389,7 @@ namespace PsFtpProvider
 
 				if (!Children.ContainsKey(name))
 				{
-					throw new ArgumentOutOfRangeException("name", string.Format("Cannot delete directory named {0} because it doesn't exist.", name));
+					throw new ArgumentOutOfRangeException(nameof(name), string.Format("Cannot delete directory named {0} because it doesn't exist.", name));
 				}
 			}
 

@@ -116,7 +116,7 @@ namespace PsFtpProvider
 			var item = cache.GetItem(path);
 			if (item.Item.Type != FtpFileSystemObjectType.File)
 			{
-				throw new ArgumentOutOfRangeException("path", "Item is not a file.");
+				throw new ArgumentOutOfRangeException(nameof(path), "Item is not a file.");
 			}
 
 			return new ContentReader(item, parameters, cache.Client);
@@ -137,7 +137,7 @@ namespace PsFtpProvider
 
 			if (item.Item.Type != FtpFileSystemObjectType.File)
 			{
-				throw new ArgumentOutOfRangeException("path", "Cannot create a new file with that name because a non-file item of that name already exists.");
+				throw new ArgumentOutOfRangeException(nameof(path), "Cannot create a new file with that name because a non-file item of that name already exists.");
 			}
 
 			return new ContentWriter(item, parameters, cache.Client);
