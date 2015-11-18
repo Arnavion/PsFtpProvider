@@ -42,10 +42,8 @@ namespace PsFtpProvider
 			cache = new Cache(site);
 		}
 
-		public void ClearCache()
-		{
+		public void ClearCache() =>
 			cache.Clear();
-		}
 
 		internal bool IsItemContainer(string path)
 		{
@@ -60,10 +58,8 @@ namespace PsFtpProvider
 			}
 		}
 
-		internal IEnumerable<FtpListItem> GetChildItems(string path)
-		{
-			return cache.GetChildItems(path).Select(cacheNode => cacheNode.Item);
-		}
+		internal IEnumerable<FtpListItem> GetChildItems(string path) =>
+			cache.GetChildItems(path).Select(cacheNode => cacheNode.Item);
 
 		internal bool HasChildItems(string path)
 		{
@@ -77,20 +73,14 @@ namespace PsFtpProvider
 			}
 		}
 
-		internal FtpListItem NewFile(string path)
-		{
-			return cache.CreateFile(path).Item;
-		}
+		internal FtpListItem NewFile(string path) =>
+			cache.CreateFile(path).Item;
 
-		internal FtpListItem NewDirectory(string path)
-		{
-			return cache.CreateDirectory(path).Item;
-		}
+		internal FtpListItem NewDirectory(string path) =>
+			cache.CreateDirectory(path).Item;
 
-		internal FtpListItem GetItem(string path)
-		{
-			return cache.GetItem(path).Item;
-		}
+		internal FtpListItem GetItem(string path) =>
+			cache.GetItem(path).Item;
 
 		internal void RemoveItem(string path, bool recurse)
 		{

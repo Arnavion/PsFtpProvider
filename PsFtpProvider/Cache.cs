@@ -52,10 +52,8 @@ namespace PsFtpProvider
 			Clear();
 		}
 
-		public void Clear()
-		{
+		public void Clear() =>
 			root = new CacheDirectoryNode(new FtpListItem() { FullName = "/", Type = FtpFileSystemObjectType.Directory }, null, Client);
-		}
 
 		public CacheNode GetItem(string path)
 		{
@@ -315,10 +313,8 @@ namespace PsFtpProvider
 			return child;
 		}
 
-		public List<CacheNode> GetChildren()
-		{
-			return Children.Values.ToList();
-		}
+		public List<CacheNode> GetChildren() =>
+			Children.Values.ToList();
 
 		public CacheNode CreateFile(string name)
 		{
@@ -398,9 +394,7 @@ namespace PsFtpProvider
 			MarkDirty();
 		}
 
-		public void MarkDirty()
-		{
+		public void MarkDirty() =>
 			needsRefresh = true;
-		}
 	}
 }

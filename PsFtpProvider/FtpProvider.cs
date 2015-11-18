@@ -33,13 +33,8 @@ namespace PsFtpProvider
 	[CmdletProvider("PsFtp", ProviderCapabilities.Credentials)]
 	public class FtpProvider : NavigationCmdletProvider, IContentCmdletProvider
 	{
-		private new FtpDriveInfo PSDriveInfo
-		{
-			get
-			{
-				return (FtpDriveInfo)base.PSDriveInfo;
-			}
-		}
+		private new FtpDriveInfo PSDriveInfo =>
+			(FtpDriveInfo)base.PSDriveInfo;
 
 		protected override Collection<PSDriveInfo> InitializeDefaultDrives()
 		{
@@ -78,10 +73,8 @@ namespace PsFtpProvider
 
 		#region NavigationCmdletProvider members
 
-		protected override bool IsItemContainer(string path)
-		{
-			return PSDriveInfo.IsItemContainer(path);
-		}
+		protected override bool IsItemContainer(string path) =>
+			PSDriveInfo.IsItemContainer(path);
 
 		#endregion
 
@@ -100,10 +93,8 @@ namespace PsFtpProvider
 			}
 		}
 
-		protected override bool HasChildItems(string path)
-		{
-			return PSDriveInfo.HasChildItems(path);
-		}
+		protected override bool HasChildItems(string path) =>
+			PSDriveInfo.HasChildItems(path);
 
 		protected override void NewItem(string path, string itemTypeName, object newItemValue)
 		{
@@ -126,10 +117,8 @@ namespace PsFtpProvider
 			WriteItemObject(newItem, path, newItem.Type == FtpFileSystemObjectType.Directory);
 		}
 
-		protected override void RemoveItem(string path, bool recurse)
-		{
+		protected override void RemoveItem(string path, bool recurse) =>
 			PSDriveInfo.RemoveItem(path, recurse);
-		}
 
 		#endregion
 
@@ -141,10 +130,8 @@ namespace PsFtpProvider
 			WriteItemObject(item, item.FullName, item.Type == FtpFileSystemObjectType.Directory);
 		}
 
-		protected override bool IsValidPath(string path)
-		{
-			return PSDriveInfo != null;
-		}
+		protected override bool IsValidPath(string path) =>
+			PSDriveInfo != null;
 
 		protected override bool ItemExists(string path)
 		{
@@ -201,10 +188,8 @@ namespace PsFtpProvider
 			throw new ArgumentOutOfRangeException(nameof(drive));
 		}
 
-		protected override object NewDriveDynamicParameters()
-		{
-			return new NewFtpDriveDynamicParameters();
-		}
+		protected override object NewDriveDynamicParameters() =>
+			new NewFtpDriveDynamicParameters();
 
 		protected override PSDriveInfo RemoveDrive(PSDriveInfo drive)
 		{
@@ -223,30 +208,20 @@ namespace PsFtpProvider
 			}
 		}
 
-		public object ClearContentDynamicParameters(string path)
-		{
-			return null;
-		}
+		public object ClearContentDynamicParameters(string path) =>
+			null;
 
-		public IContentReader GetContentReader(string path)
-		{
-			return PSDriveInfo.GetContentReader(path, DynamicParameters as ContentReaderDynamicParameters);
-		}
+		public IContentReader GetContentReader(string path) =>
+			PSDriveInfo.GetContentReader(path, DynamicParameters as ContentReaderDynamicParameters);
 
-		public object GetContentReaderDynamicParameters(string path)
-		{
-			return new ContentReaderDynamicParameters();
-		}
+		public object GetContentReaderDynamicParameters(string path) =>
+			new ContentReaderDynamicParameters();
 
-		public IContentWriter GetContentWriter(string path)
-		{
-			return PSDriveInfo.GetContentWriter(path, DynamicParameters as ContentWriterDynamicParameters);
-		}
+		public IContentWriter GetContentWriter(string path) =>
+			PSDriveInfo.GetContentWriter(path, DynamicParameters as ContentWriterDynamicParameters);
 
-		public object GetContentWriterDynamicParameters(string path)
-		{
-			return new ContentWriterDynamicParameters();
-		}
+		public object GetContentWriterDynamicParameters(string path) =>
+			new ContentWriterDynamicParameters();
 
 		#endregion
 	}
