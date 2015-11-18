@@ -292,7 +292,7 @@ namespace PsFtpProvider
 		private FtpClient client;
 
 		public CacheDirectoryNode(FtpListItem item, CacheDirectoryNode parent, FtpClient client)
-			:base(item, parent)
+			: base(item, parent)
 		{
 			this.client = client;
 
