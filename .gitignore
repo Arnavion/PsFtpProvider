@@ -1,5 +1,4 @@
-*.csproj.user
-/*.suo
+/.vs/
 /packages/
 **/bin/
 **/obj/

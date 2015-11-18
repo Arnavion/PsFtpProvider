@@ -6,7 +6,7 @@ It allows you to interact with FTP sites using the commandlets you use for worki
 ### Build
 
 ```batchfile
-REM In "Developer Command Prompt for VS 2013"
+REM In "Developer Command Prompt for VS 2015"
 msbuild .\PsFtpProvider.sln
 ```
 
