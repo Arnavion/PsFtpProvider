@@ -35,11 +35,11 @@ namespace PsFtpProvider
 	{
 		protected const int ByteBufferSize = 4096;
 
-		protected CacheNode Item { get; private set; }
+		protected CacheNode Item { get; }
 
-		protected FtpClient Client { get; private set; }
+		protected FtpClient Client { get; }
 
-		protected Encoding Encoding { get; private set; }
+		protected Encoding Encoding { get; }
 
 		protected Stream Stream { get; set; }
 

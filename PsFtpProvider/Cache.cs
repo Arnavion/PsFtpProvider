@@ -225,7 +225,7 @@ namespace PsFtpProvider
 	{
 		public FtpListItem Item { get; set; }
 
-		public CacheDirectoryNode Parent { get; private set; }
+		public CacheDirectoryNode Parent { get; }
 
 		public CacheNode(FtpListItem item, CacheDirectoryNode parent)
 		{
