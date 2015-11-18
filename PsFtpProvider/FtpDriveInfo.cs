@@ -151,6 +151,9 @@ namespace PsFtpProvider
 
 		[Parameter(Mandatory = true)]
 		public ushort Port { get; set; }
+
+		[Parameter]
+		public FtpEncryptionMode EncryptionMode { get; set; }
 	}
 
 	internal class Site
@@ -163,12 +166,15 @@ namespace PsFtpProvider
 
 		public NetworkCredential Credential { get; private set; }
 
-		public Site(string name, string hostname, ushort port, NetworkCredential credential)
+		public FtpEncryptionMode EncryptionMode { get; private set; }
+
+		public Site(string name, string hostname, ushort port, NetworkCredential credential, FtpEncryptionMode encryptionMode)
 		{
 			Name = name;
 			Hostname = hostname;
 			Port = port;
 			Credential = credential;
+			EncryptionMode = encryptionMode;
 		}
 	}
 }

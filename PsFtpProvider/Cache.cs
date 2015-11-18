@@ -36,7 +36,7 @@ namespace PsFtpProvider
 			{
 				if (_client == null)
 				{
-					_client = new FtpClient() { Host = site.Hostname, Port = site.Port, Credentials = site.Credential };
+					_client = new FtpClient() { Host = site.Hostname, Port = site.Port, Credentials = site.Credential, EncryptionMode = site.EncryptionMode };
 				}
 
 				return _client;
