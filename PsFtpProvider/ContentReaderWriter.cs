@@ -334,7 +334,7 @@ namespace PsFtpProvider
 						break;
 
 					default:
-						throw new InvalidOperationException(string.Format("Unknown mode {0}", mode));
+						throw new InvalidOperationException($"Unknown mode { mode }");
 				}
 			}
 
