@@ -1,4 +1,4 @@
-/.vs/
-/packages/
-**/bin/
-**/obj/
+/project.lock.json
+
+/bin/
+/obj/

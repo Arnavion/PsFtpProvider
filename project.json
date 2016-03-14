@@ -1,0 +1,25 @@
+{
+	"version": "0.1.0",
+	"authors": [
+		"Arnavion"
+	],
+	"description": "PowerShell provider for FTP sites",
+	"dependencies": {
+		"Microsoft.PowerShell.4.ReferenceAssemblies": "1.0.0",
+		"System.Net.FtpClient": "1.0.5281.14359"
+	},
+	"frameworks": {
+		"net46": {
+			"frameworkAssemblies": {
+				"System.Xml": "",
+				"System.Xml.Linq": ""
+			}
+		}
+	},
+	"compile": "src/**/*.cs",
+	"content": [
+		"PsFtpProvider.psd1",
+		"PsFtpProvider.psm1",
+		"PsFtpProvider.Types.ps1xml"
+	]
+}

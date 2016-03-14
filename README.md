@@ -6,8 +6,8 @@ It allows you to interact with FTP sites using the commandlets you use for worki
 ### Build
 
 ```batchfile
-REM In "Developer Command Prompt for VS 2015"
-msbuild .\PsFtpProvider.sln
+dotnet restore
+dotnet publish
 ```
 
 
@@ -16,7 +16,7 @@ msbuild .\PsFtpProvider.sln
 * Import the provider into a PS session
 
 	```powershell
-	cd PsFtpProvider\bin\Debug
+	cd bin\Debug\net46\win7-x64\publish
 	Import-Module .\PsFtpProvider.psd1
 	```
 
