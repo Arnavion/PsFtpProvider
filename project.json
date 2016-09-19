@@ -16,10 +16,11 @@
 			}
 		}
 	},
-	"compile": "src/**/*.cs",
-	"content": [
-		"PsFtpProvider.psd1",
-		"PsFtpProvider.psm1",
-		"PsFtpProvider.Types.ps1xml"
-	]
+	"publishOptions": {
+		"include": [
+			"PsFtpProvider.psd1",
+			"PsFtpProvider.psm1",
+			"PsFtpProvider.Types.ps1xml"
+		]
+	}
 }
