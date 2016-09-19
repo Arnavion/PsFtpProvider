@@ -49,7 +49,7 @@ namespace PsFtpProvider
 
 			Client = client;
 
-			var encoding = parameters != null ? parameters.Encoding : FileSystemCmdletProviderEncoding.Byte;
+			var encoding = parameters?.Encoding ?? FileSystemCmdletProviderEncoding.Byte;
 
 			if (encoding != FileSystemCmdletProviderEncoding.Byte)
 			{
@@ -91,15 +91,8 @@ namespace PsFtpProvider
 		public ContentReader(CacheNode item, ContentReaderDynamicParameters parameters, FtpClient client)
 			: base(item, parameters, client)
 		{
-			if (Encoding != null)
-			{
-				decoder = Encoding.GetDecoder();
-			}
-
-			if (parameters != null)
-			{
-				raw = parameters.Raw;
-			}
+			decoder = Encoding?.GetDecoder();
+			raw = parameters?.Raw ?? false;
 		}
 
 		public IList Read(long readCount)
@@ -313,10 +306,7 @@ namespace PsFtpProvider
 		public ContentWriter(CacheNode item, ContentWriterDynamicParameters parameters, FtpClient client)
 			: base(item, parameters, client)
 		{
-			if (Encoding != null)
-			{
-				encoder = Encoding.GetEncoder();
-			}
+			encoder = Encoding?.GetEncoder();
 		}
 
 		public IList Write(IList content)
@@ -378,11 +368,7 @@ namespace PsFtpProvider
 			}
 			else if (content[0] is byte)
 			{
-				var bytes = content as byte[];
-				if (bytes == null)
-				{
-					bytes = content.Cast<byte>().ToArray();
-				}
+				var bytes = content as byte[] ?? content.Cast<byte>().ToArray();
 
 				var bytesWritten = 0;
 				while (bytesWritten < bytes.Length)
