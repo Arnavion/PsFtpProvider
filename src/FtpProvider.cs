@@ -170,22 +170,22 @@ namespace PsFtpProvider
 			}
 
 			var dynamicParameters = DynamicParameters as NewFtpDriveDynamicParameters;
-			if (dynamicParameters != null)
+			if (dynamicParameters == null)
 			{
-				return new FtpDriveInfo
-				(
-					new Site
-					(
-						drive.Name,
-						dynamicParameters.Hostname, dynamicParameters.Port,
-						(drive.Credential != null && drive.Credential != PSCredential.Empty) ? new NetworkCredential(drive.Credential.UserName, drive.Credential.Password) : null,
-						dynamicParameters.EncryptionMode
-					),
-					ProviderInfo
-				);
+				throw new ArgumentOutOfRangeException(nameof(drive));
 			}
 
-			throw new ArgumentOutOfRangeException(nameof(drive));
+			return new FtpDriveInfo
+			(
+				new Site
+				(
+					drive.Name,
+					dynamicParameters.Hostname, dynamicParameters.Port,
+					(NetworkCredential)drive.Credential,
+					dynamicParameters.EncryptionMode
+				),
+				ProviderInfo
+			);
 		}
 
 		protected override object NewDriveDynamicParameters() =>
