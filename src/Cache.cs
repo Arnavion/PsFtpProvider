@@ -27,7 +27,7 @@ namespace PsFtpProvider
 {
 	internal class Cache
 	{
-		private Site site;
+		private readonly Site site;
 
 		private FtpClient _client;
 		public FtpClient Client
@@ -289,7 +289,7 @@ namespace PsFtpProvider
 
 		private bool needsRefresh;
 
-		private FtpClient client;
+		private readonly FtpClient client;
 
 		public CacheDirectoryNode(FtpListItem item, CacheDirectoryNode parent, FtpClient client)
 			: base(item, parent)

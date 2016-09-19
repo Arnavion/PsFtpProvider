@@ -29,7 +29,7 @@ namespace PsFtpProvider
 {
 	public class FtpDriveInfo : PSDriveInfo
 	{
-		private Cache cache;
+		private readonly Cache cache;
 
 		internal FtpDriveInfo(Site site, ProviderInfo provider)
 			: base

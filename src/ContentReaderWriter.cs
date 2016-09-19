@@ -85,8 +85,8 @@ namespace PsFtpProvider
 
 	internal class ContentReader : ContentReaderWriterBase, IContentReader
 	{
-		private Decoder decoder;
-		private bool raw;
+		private readonly Decoder decoder;
+		private readonly bool raw;
 
 		public ContentReader(CacheNode item, ContentReaderDynamicParameters parameters, FtpClient client)
 			: base(item, parameters, client)
