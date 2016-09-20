@@ -37,41 +37,6 @@ namespace PsFtpProvider
 		private new FtpDriveInfo PSDriveInfo =>
 			(FtpDriveInfo)base.PSDriveInfo;
 
-		protected override Collection<PSDriveInfo> InitializeDefaultDrives()
-		{
-			try
-			{
-				var root = XElement.Load(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FileZilla", "sitemanager.xml"));
-
-				return new Collection<PSDriveInfo>(
-					(
-						from server in root.Element("Servers").Elements("Server")
-						let passwordElement = server.Element("Pass")
-						let password = passwordElement.Attribute("encoding")?.Value == "base64" ? Encoding.UTF8.GetString(Convert.FromBase64String(passwordElement.Value)) : passwordElement.Value
-						let protocol = int.Parse(server.Element("Protocol").Value)
-						select new FtpDriveInfo
-						(
-							new Site
-							(
-								string.Join("", from textNode in server.Nodes().OfType<XText>() select textNode.Value.Trim()),
-								server.Element("Host").Value, ushort.Parse(server.Element("Port").Value),
-								new NetworkCredential(server.Element("User").Value, password),
-								(protocol == 0 || protocol == 4) ? FtpEncryptionMode.Explicit :
-								(protocol == 3) ? FtpEncryptionMode.Implicit :
-								(protocol == 6) ? FtpEncryptionMode.None :
-								FtpEncryptionMode.Explicit
-							),
-							ProviderInfo
-						)
-					).ToList<PSDriveInfo>()
-				);
-			}
-			catch
-			{
-				return new Collection<PSDriveInfo>();
-			}
-		}
-
 		#region NavigationCmdletProvider members
 
 		protected override bool IsItemContainer(string path) =>
@@ -156,6 +121,41 @@ namespace PsFtpProvider
 		#endregion
 
 		#region DriveCmdletProvider members
+
+		protected override Collection<PSDriveInfo> InitializeDefaultDrives()
+		{
+			try
+			{
+				var root = XElement.Load(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FileZilla", "sitemanager.xml"));
+
+				return new Collection<PSDriveInfo>(
+					(
+						from server in root.Element("Servers").Elements("Server")
+						let passwordElement = server.Element("Pass")
+						let password = passwordElement.Attribute("encoding")?.Value == "base64" ? Encoding.UTF8.GetString(Convert.FromBase64String(passwordElement.Value)) : passwordElement.Value
+						let protocol = int.Parse(server.Element("Protocol").Value)
+						select new FtpDriveInfo
+						(
+							new Site
+							(
+								string.Join("", from textNode in server.Nodes().OfType<XText>() select textNode.Value.Trim()),
+								server.Element("Host").Value, ushort.Parse(server.Element("Port").Value),
+								new NetworkCredential(server.Element("User").Value, password),
+								(protocol == 0 || protocol == 4) ? FtpEncryptionMode.Explicit :
+								(protocol == 3) ? FtpEncryptionMode.Implicit :
+								(protocol == 6) ? FtpEncryptionMode.None :
+								FtpEncryptionMode.Explicit
+							),
+							ProviderInfo
+						)
+					).ToList<PSDriveInfo>()
+				);
+			}
+			catch
+			{
+				return new Collection<PSDriveInfo>();
+			}
+		}
 
 		protected override PSDriveInfo NewDrive(PSDriveInfo drive)
 		{
