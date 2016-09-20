@@ -26,6 +26,7 @@ using System.Management.Automation;
 using System.Management.Automation.Provider;
 using System.Net;
 using System.Net.FtpClient;
+using System.Text;
 using System.Xml.Linq;
 
 namespace PsFtpProvider
@@ -46,7 +47,7 @@ namespace PsFtpProvider
 					(
 						from server in root.Element("Servers").Elements("Server")
 						let passwordElement = server.Element("Pass")
-						let password = passwordElement.Attribute("encoding")?.Value == "base64" ? new string(Convert.FromBase64String(passwordElement.Value).Select(b => (char)b).ToArray()) : passwordElement.Value
+						let password = passwordElement.Attribute("encoding")?.Value == "base64" ? Encoding.UTF8.GetString(Convert.FromBase64String(passwordElement.Value)) : passwordElement.Value
 						let protocol = int.Parse(server.Element("Protocol").Value)
 						select new FtpDriveInfo
 						(
