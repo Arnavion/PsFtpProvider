@@ -27,7 +27,7 @@
 	Author = 'Arnavion'
 
 	RequiredAssemblies = @(
-		'System.Net.FtpClient.dll'
+		'FluentFTP.dll'
 	)
 
 	TypesToProcess = @(

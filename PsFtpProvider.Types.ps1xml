@@ -20,77 +20,77 @@
 -->
 <Types>
 	<Type>
-		<Name>System.Net.FtpClient.FtpListItem</Name>
+		<Name>FluentFTP.FtpListItem</Name>
 		<Members>
 			<ScriptProperty>
 				<Name>Mode</Name>
 				<GetScriptBlock>
 					[string] $result = ''
 
-					if ($this.Type -eq [System.Net.FtpClient.FtpFileSystemObjectType]::Directory) {
+					if ($this.Type -eq [FluentFTP.FtpFileSystemObjectType]::Directory) {
 						$result += 'd'
 					}
 					else {
 						$result += '-'
 					}
 
-					if ($this.OwnerPermissions -band [System.Net.FtpClient.FtpPermission]::Read) {
+					if ($this.OwnerPermissions -band [FluentFTP.FtpPermission]::Read) {
 						$result += 'r'
 					}
 					else {
 						$result += '-'
 					}
 
-					if ($this.OwnerPermissions -band [System.Net.FtpClient.FtpPermission]::Write) {
+					if ($this.OwnerPermissions -band [FluentFTP.FtpPermission]::Write) {
 						$result += 'w'
 					}
 					else {
 						$result += '-'
 					}
 
-					if ($this.OwnerPermissions -band [System.Net.FtpClient.FtpPermission]::Execute) {
+					if ($this.OwnerPermissions -band [FluentFTP.FtpPermission]::Execute) {
 						$result += 'x'
 					}
 					else {
 						$result += '-'
 					}
 
-					if ($this.GroupPermissions -band [System.Net.FtpClient.FtpPermission]::Read) {
+					if ($this.GroupPermissions -band [FluentFTP.FtpPermission]::Read) {
 						$result += 'r'
 					}
 					else {
 						$result += '-'
 					}
 
-					if ($this.GroupPermissions -band [System.Net.FtpClient.FtpPermission]::Write) {
+					if ($this.GroupPermissions -band [FluentFTP.FtpPermission]::Write) {
 						$result += 'w'
 					}
 					else {
 						$result += '-'
 					}
 
-					if ($this.GroupPermissions -band [System.Net.FtpClient.FtpPermission]::Execute) {
+					if ($this.GroupPermissions -band [FluentFTP.FtpPermission]::Execute) {
 						$result += 'x'
 					}
 					else {
 						$result += '-'
 					}
 
-					if ($this.OthersPermissions -band [System.Net.FtpClient.FtpPermission]::Read) {
+					if ($this.OthersPermissions -band [FluentFTP.FtpPermission]::Read) {
 						$result += 'r'
 					}
 					else {
 						$result += '-'
 					}
 
-					if ($this.OthersPermissions -band [System.Net.FtpClient.FtpPermission]::Write) {
+					if ($this.OthersPermissions -band [FluentFTP.FtpPermission]::Write) {
 						$result += 'w'
 					}
 					else {
 						$result += '-'
 					}
 
-					if ($this.OthersPermissions -band [System.Net.FtpClient.FtpPermission]::Execute) {
+					if ($this.OthersPermissions -band [FluentFTP.FtpPermission]::Execute) {
 						$result += 'x'
 					}
 					else {

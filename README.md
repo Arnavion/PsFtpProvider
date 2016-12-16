@@ -169,4 +169,4 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-FTP implementation is provided by [System.Net.FtpClient](https://netftp.codeplex.com/) which uses the MIT license.
+FTP implementation is provided by [FluentFTP](https://github.com/hgupta9/FluentFTP) which uses the MIT license.

@@ -25,9 +25,9 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Provider;
 using System.Net;
-using System.Net.FtpClient;
 using System.Text;
 using System.Xml.Linq;
+using FluentFTP;
 
 namespace PsFtpProvider
 {

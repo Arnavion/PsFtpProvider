@@ -6,7 +6,7 @@
 	"description": "PowerShell provider for FTP sites",
 	"dependencies": {
 		"Microsoft.PowerShell.4.ReferenceAssemblies": "1.0.0",
-		"System.Net.FtpClient": "1.0.5824.34026"
+		"FluentFTP": "16.0.15"
 	},
 	"frameworks": {
 		"net46": {
