@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<AssemblyName>PsFtpProvider</AssemblyName>
+		<Description>PowerShell provider for FTP sites</Description>
+		<VersionPrefix>0.1.0</VersionPrefix>
+		<Authors><![CDATA[Arnav Singh <arnavion@gmail.com>]]></Authors>
+		<Copyright>Copyright 2014 Arnav Singh</Copyright>
+
+		<TargetFramework>net46</TargetFramework>
+
+		<PackageId>PsFtpProvider</PackageId>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Update="PsFtpProvider.psd1" CopyToPublishDirectory="PreserveNewest" />
+		<None Update="PsFtpProvider.psm1" CopyToPublishDirectory="PreserveNewest" />
+		<None Update="PsFtpProvider.Types.ps1xml" CopyToPublishDirectory="PreserveNewest" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="FluentFTP" Version="16.*" />
+		<PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" Version="1.0.0" />
+	</ItemGroup>
+
+</Project>

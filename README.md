@@ -16,7 +16,7 @@ dotnet publish
 * Import the provider into a PS session
 
 	```powershell
-	cd bin\Debug\net46\win7-x64\publish
+	cd bin\Debug\net46\publish
 	Import-Module .\PsFtpProvider.psd1
 	```
 
