@@ -21,6 +21,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using FluentFTP;
 
 namespace PsFtpProvider
@@ -37,6 +39,7 @@ namespace PsFtpProvider
 				if (_client == null)
 				{
 					_client = new FtpClient() { Host = site.Hostname, Port = site.Port, Credentials = site.Credential, EncryptionMode = site.EncryptionMode };
+					_client.ValidateCertificate += ValidateCertificateCallback;
 				}
 
 				return _client;
@@ -196,6 +199,15 @@ namespace PsFtpProvider
 			}
 
 			current.DeleteDirectory(directoryName, recurse);
+		}
+
+		private static void ValidateCertificateCallback(FtpClient client, FtpSslValidationEventArgs e)
+		{
+			if (e.PolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors)
+			{
+				e.Accept = e.Chain.ChainStatus.All(chainStatus =>
+					(chainStatus.Status & (X509ChainStatusFlags.OfflineRevocation | X509ChainStatusFlags.RevocationStatusUnknown)) != 0);
+			}
 		}
 
 		private string GetValidPath(string path)
