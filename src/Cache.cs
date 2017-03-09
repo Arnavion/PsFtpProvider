@@ -63,19 +63,16 @@ namespace PsFtpProvider
 			CacheNode current = root;
 			foreach (var component in components)
 			{
-				var currentDirectory = current as CacheDirectoryNode;
-				if (currentDirectory == null)
+				if (current is CacheDirectoryNode currentDirectory)
+				{
+					var child = currentDirectory.GetChild(component);
+					current = child ??
+						throw new ArgumentOutOfRangeException(nameof(path), $"Item { component } does not exist under { current.Item.FullName }");
+				}
+				else
 				{
 					break;
 				}
-
-				var child = currentDirectory.GetChild(component);
-				if (child == null)
-				{
-					throw new ArgumentOutOfRangeException(nameof(path), $"Item { component } does not exist under { current.Item.FullName }");
-				}
-
-				current = child;
 			}
 
 			if (current.Item.FullName != path)
@@ -91,13 +88,12 @@ namespace PsFtpProvider
 		{
 			var item = GetItem(path);
 
-			var directory = item as CacheDirectoryNode;
-			if (directory == null)
+			if (item is CacheDirectoryNode directory)
 			{
-				throw new ArgumentOutOfRangeException(nameof(path), $"{ path } is not a directory.");
+				return directory.GetChildren();
 			}
 
-			return directory.GetChildren();
+			throw new ArgumentOutOfRangeException(nameof(path), $"{ path } is not a directory.");
 		}
 
 		public CacheNode CreateDirectory(string path)
@@ -108,18 +104,16 @@ namespace PsFtpProvider
 			CacheDirectoryNode current = root;
 			foreach (var component in components)
 			{
-				var child = current.GetChild(component);
-				if (child == null)
+				switch (current.GetChild(component))
 				{
-					child = current.CreateDirectory(component);
-				}
-				else if (child is CacheDirectoryNode)
-				{
-					current = (CacheDirectoryNode)child;
-				}
-				else
-				{
-					throw new ArgumentOutOfRangeException(nameof(path), $"Cannot create a directory named { component } because a file of that name already exists.");
+					case null:
+						current.CreateDirectory(component);
+						break;
+					case CacheDirectoryNode directory:
+						current = directory;
+						break;
+					default:
+						throw new ArgumentOutOfRangeException(nameof(path), $"Cannot create a directory named { component } because a file of that name already exists.");
 				}
 			}
 
@@ -138,18 +132,16 @@ namespace PsFtpProvider
 			CacheDirectoryNode current = root;
 			foreach (var component in parentPathComponents)
 			{
-				var child = current.GetChild(component);
-				if (child == null)
+				switch (current.GetChild(component))
 				{
-					child = current.CreateDirectory(component);
-				}
-				else if (child is CacheDirectoryNode)
-				{
-					current = (CacheDirectoryNode)child;
-				}
-				else
-				{
-					throw new ArgumentOutOfRangeException(nameof(path), $"Cannot create a directory named { component } because a file of that name already exists.");
+					case null:
+						current.CreateDirectory(component);
+						break;
+					case CacheDirectoryNode directory:
+						current = directory;
+						break;
+					default:
+						throw new ArgumentOutOfRangeException(nameof(path), $"Cannot create a directory named { component } because a file of that name already exists.");
 				}
 			}
 
@@ -168,13 +160,14 @@ namespace PsFtpProvider
 			CacheDirectoryNode current = root;
 			foreach (var component in parentPathComponents)
 			{
-				var child = current.GetChild(component);
-				if (child == null || !(child is CacheDirectoryNode))
+				if (current.GetChild(component) is CacheDirectoryNode directory)
+				{
+					current = directory;
+				}
+				else
 				{
 					throw new ArgumentOutOfRangeException(nameof(path), $"Directory { component } does not exist.");
 				}
-
-				current = (CacheDirectoryNode)child;
 			}
 
 			current.DeleteFile(fileName);
@@ -192,13 +185,14 @@ namespace PsFtpProvider
 			CacheDirectoryNode current = root;
 			foreach (var component in parentPathComponents)
 			{
-				var child = current.GetChild(component);
-				if (child == null || !(child is CacheDirectoryNode))
+				if (current.GetChild(component) is CacheDirectoryNode directory)
+				{
+					current = directory;
+				}
+				else
 				{
 					throw new ArgumentOutOfRangeException(nameof(path), $"Directory { component } does not exist.");
 				}
-
-				current = (CacheDirectoryNode)child;
 			}
 
 			current.DeleteDirectory(directoryName, recurse);
@@ -267,8 +261,7 @@ namespace PsFtpProvider
 						{
 							var listingChild = kvp.Value;
 
-							CacheNode existingChild;
-							if (_children.TryGetValue(listingChild.Item.Name, out existingChild) && existingChild.Item.Type == listingChild.Item.Type)
+							if (_children.TryGetValue(listingChild.Item.Name, out var existingChild) && existingChild.Item.Type == listingChild.Item.Type)
 							{
 								existingChild.Item = listingChild.Item;
 								return existingChild;
@@ -301,9 +294,7 @@ namespace PsFtpProvider
 
 		public CacheNode GetChild(string name)
 		{
-			CacheNode child;
-
-			if (!Children.TryGetValue(name, out child))
+			if (!Children.TryGetValue(name, out var child))
 			{
 				// If not found once, try refreshing once.
 				MarkDirty();

@@ -356,10 +356,7 @@ namespace PsFtpProvider
 					var completed = false;
 					while (!completed)
 					{
-						int charsUsed;
-						int bytesUsed;
-
-						encoder.Convert(chars, convertedChars, chars.Length - convertedChars, bytes, 0, bytes.Length, false, out charsUsed, out bytesUsed, out completed);
+						encoder.Convert(chars, convertedChars, chars.Length - convertedChars, bytes, 0, bytes.Length, false, out var charsUsed, out var bytesUsed, out completed);
 						convertedChars += charsUsed;
 
 						Stream.Write(bytes, 0, bytesUsed);
@@ -445,14 +442,8 @@ namespace PsFtpProvider
 		[Parameter]
 		public FileSystemCmdletProviderEncoding Encoding
 		{
-			get
-			{
-				return encoding == FileSystemCmdletProviderEncoding.Unknown ? FileSystemCmdletProviderEncoding.Byte : encoding;
-			}
-			set
-			{
-				encoding = value;
-			}
+			get => encoding == FileSystemCmdletProviderEncoding.Unknown ? FileSystemCmdletProviderEncoding.Byte : encoding;
+			set => encoding = value;
 		}
 	}
 
