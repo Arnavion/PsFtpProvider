@@ -63,6 +63,7 @@ namespace PsFtpProvider
 			path = GetValidPath(path);
 
 			var components = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
 			CacheNode current = root;
 			foreach (var component in components)
 			{
@@ -99,28 +100,21 @@ namespace PsFtpProvider
 			throw new ArgumentOutOfRangeException(nameof(path), $"{ path } is not a directory.");
 		}
 
-		public CacheNode CreateDirectory(string path)
+		public CacheDirectoryNode CreateDirectory(string path)
 		{
 			path = GetValidPath(path);
 
 			var components = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-			CacheDirectoryNode current = root;
-			foreach (var component in components)
-			{
-				switch (current.GetChild(component))
-				{
-					case null:
-						current.CreateDirectory(component);
-						break;
-					case CacheDirectoryNode directory:
-						current = directory;
-						break;
-					default:
-						throw new ArgumentOutOfRangeException(nameof(path), $"Cannot create a directory named { component } because a file of that name already exists.");
-				}
-			}
 
-			return current;
+			return components.Aggregate(root, (previous, current) =>
+			{
+				switch (previous.GetChild(current))
+				{
+					case null: return previous.CreateDirectory(current);
+					case CacheDirectoryNode dir: return dir;
+					default: throw new ArgumentOutOfRangeException(nameof(path), $"Cannot create a directory named { current } because a file of that name already exists.");
+				}
+			});
 		}
 
 		public CacheNode CreateFile(string path)
@@ -129,26 +123,10 @@ namespace PsFtpProvider
 
 			var lastSlashPos = path.LastIndexOf('/');
 			var parentPath = path.Substring(0, lastSlashPos);
+			var directory = CreateDirectory(parentPath);
 			var fileName = path.Substring(lastSlashPos + 1);
 
-			var parentPathComponents = parentPath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-			CacheDirectoryNode current = root;
-			foreach (var component in parentPathComponents)
-			{
-				switch (current.GetChild(component))
-				{
-					case null:
-						current.CreateDirectory(component);
-						break;
-					case CacheDirectoryNode directory:
-						current = directory;
-						break;
-					default:
-						throw new ArgumentOutOfRangeException(nameof(path), $"Cannot create a directory named { component } because a file of that name already exists.");
-				}
-			}
-
-			return current.CreateFile(fileName);
+			return directory.CreateFile(fileName);
 		}
 
 		public void DeleteFile(string path)
@@ -160,20 +138,12 @@ namespace PsFtpProvider
 			var fileName = path.Substring(lastSlashPos + 1);
 
 			var parentPathComponents = parentPath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-			CacheDirectoryNode current = root;
-			foreach (var component in parentPathComponents)
-			{
-				if (current.GetChild(component) is CacheDirectoryNode directory)
-				{
-					current = directory;
-				}
-				else
-				{
-					throw new ArgumentOutOfRangeException(nameof(path), $"Directory { component } does not exist.");
-				}
-			}
+			var directory = parentPathComponents.Aggregate(root, (previous, current) =>
+				previous.GetChild(current) is CacheDirectoryNode dir ?
+					dir :
+					throw new ArgumentOutOfRangeException(nameof(path), $"Directory { current } does not exist."));
 
-			current.DeleteFile(fileName);
+			directory.DeleteFile(fileName);
 		}
 
 		public void DeleteDirectory(string path, bool recurse)
@@ -185,20 +155,11 @@ namespace PsFtpProvider
 			var directoryName = path.Substring(lastSlashPos + 1);
 
 			var parentPathComponents = parentPath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-			CacheDirectoryNode current = root;
-			foreach (var component in parentPathComponents)
-			{
-				if (current.GetChild(component) is CacheDirectoryNode directory)
-				{
-					current = directory;
-				}
-				else
-				{
-					throw new ArgumentOutOfRangeException(nameof(path), $"Directory { component } does not exist.");
-				}
-			}
-
-			current.DeleteDirectory(directoryName, recurse);
+			var directory = parentPathComponents.Aggregate(root, (previous, current) =>
+				previous.GetChild(current) is CacheDirectoryNode dir ?
+					dir :
+					throw new ArgumentOutOfRangeException(nameof(path), $"Directory { current } does not exist."));
+			directory.DeleteDirectory(directoryName, recurse);
 		}
 
 		private static void ValidateCertificateCallback(FtpClient client, FtpSslValidationEventArgs e)
