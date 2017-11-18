@@ -16,7 +16,7 @@ dotnet publish
 * Import the provider into a PS session
 
 	```powershell
-	cd bin\Debug\net46\publish
+	cd bin\Debug\net47\publish
 	Import-Module .\PsFtpProvider.psd1
 	```
 
@@ -169,4 +169,4 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-FTP implementation is provided by [FluentFTP](https://github.com/hgupta9/FluentFTP) which uses the MIT license.
+FTP implementation is provided by [FluentFTP](https://github.com/robinrodricks/FluentFTP) which uses the MIT license.

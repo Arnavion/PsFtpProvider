@@ -353,7 +353,7 @@ namespace PsFtpProvider
 				}
 			}
 
-			client.DeleteDirectory(Item.FullName + "/" + name, recurse);
+			client.DeleteDirectory(Item.FullName + "/" + name, FtpListOption.ForceList | (recurse ? FtpListOption.Recursive : 0));
 
 			MarkDirty();
 		}

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<AssemblyName>PsFtpProvider</AssemblyName>
@@ -7,7 +7,7 @@
 		<Authors><![CDATA[Arnav Singh <arnavion@gmail.com>]]></Authors>
 		<Copyright>Copyright 2014 Arnav Singh</Copyright>
 
-		<TargetFramework>net46</TargetFramework>
+		<TargetFramework>net47</TargetFramework>
 
 		<PackageId>PsFtpProvider</PackageId>
 	</PropertyGroup>
@@ -19,7 +19,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="FluentFTP" Version="16.*" />
+		<PackageReference Include="FluentFTP" Version="19.*" />
 		<PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" Version="1.0.0" />
 	</ItemGroup>
 
