@@ -20,7 +20,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="FluentFTP" Version="19.*" />
-		<PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" Version="1.0.0" />
+		<PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" Version="1.1.0" />
 	</ItemGroup>
 
 </Project>
