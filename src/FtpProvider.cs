@@ -177,7 +177,9 @@ namespace PsFtpProvider
 					(
 						drive.Name,
 						dynamicParameters.Hostname, dynamicParameters.Port,
-						(drive.Credential != null && drive.Credential != PSCredential.Empty) ? new NetworkCredential(drive.Credential.UserName, drive.Credential.Password) : null,
+						(drive.Credential != null && drive.Credential != PSCredential.Empty) ?
+							new NetworkCredential(drive.Credential.UserName, drive.Credential.Password) :
+							new NetworkCredential("anonymous", ""),
 						dynamicParameters.EncryptionMode
 					),
 					ProviderInfo

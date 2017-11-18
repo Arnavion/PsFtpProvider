@@ -35,7 +35,7 @@ namespace PsFtpProvider
 			: base
 			(
 				site.Name, provider, "", "FTP Provider for " + site.Hostname,
-				site.Credential != null ? new PSCredential(site.Credential.UserName, site.Credential.SecurePassword) : null,
+				new PSCredential(site.Credential.UserName, site.Credential.SecurePassword),
 				true
 			)
 		{
