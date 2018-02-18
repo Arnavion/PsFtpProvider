@@ -126,7 +126,7 @@ namespace PsFtpProvider
 		{
 			try
 			{
-				var root = XElement.Load(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FileZilla", "sitemanager.xml"));
+				var root = XElement.Load(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "filezilla", "sitemanager.xml"));
 
 				return new Collection<PSDriveInfo>(
 					(

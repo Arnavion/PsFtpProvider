@@ -1,23 +1,27 @@
 PsFtpProvider is a PowerShell provider for FTP sites.
 
-It allows you to interact with FTP sites using the commandlets you use for working with local files, such as Set-Location (cd), Get-ChildItem (dir) and Get-/Set-Content. Sites are loaded by default from Filezilla's sitemanager.xml if present, and exposed as drives you can cd into.
+It allows you to interact with FTP sites using the commandlets you use for working with local files, such as `Set-Location (cd)`, `Get-ChildItem (dir)` and `Get-/Set-Content`. Sites are loaded by default from Filezilla's `sitemanager.xml` if present, and exposed as drives you can `cd` into.
 
 
 ### Build
 
 - PowerShell 5.0
 
-	```batchfile
+	```powershell
 	dotnet publish -f net47
 	```
 
 - PowerShell Core (Windows)
 
-	```batchfile
+	```powershell
 	dotnet publish -f netcoreapp2.0 -r win-x64
 	```
 
-PowerShell Core on Linux is not tested but intended to be supported.
+- PowerShell Core (Linux)
+
+	```powershell
+	dotnet publish -f netcoreapp2.0 -r linux-x64
+	```
 
 
 ### Use
@@ -25,8 +29,27 @@ PowerShell Core on Linux is not tested but intended to be supported.
 * Import the provider into a PS session
 
 	```powershell
-	cd bin\Debug\net47\publish # or bin\Debug\netcoreapp2.0\win-x64\publish
-	Import-Module .\PsFtpProvider.psd1
+	# PowerShell 5.0
+	Import-Module ./bin/Debug/net47/publish/PsFtpProvider.psd1
+
+	# PowerShell Core (Windows)
+	Import-Module ./bin/Debug/netcoreapp2.0/win-x64/publish/PsFtpProvider.psd1
+
+	# PowerShell Core (Linux)
+	Import-Module ./bin/Debug/netcoreapp2.0/linux-x64/publish/PsFtpProvider.psd1
+	```
+
+	or copy the publish directory's contents to your module path so that it's loaded at startup
+
+	```powershell
+	# PowerShell 5.0
+	Copy-Item -Recurse ./bin/Debug/net47/publish/ ~/Documents/WindowsPowerShell/Modules/PsFtpProvider
+
+	# PowerShell Core (Windows)
+	Copy-Item -Recurse ./bin/Debug/netcoreapp2.0/win-x64/publish/ ~/Documents/PowerShell/Modules/PsFtpProvider
+
+	# PowerShell Core (Linux)
+	Copy-Item -Recurse ./bin/Debug/netcoreapp2.0/linux-x64/publish/ ~/.local/share/powershell/Modules/PsFtpProvider
 	```
 
 * List all FTP sites provided as drives by this provider (defaults to any sites defined in Filezilla's sitemanager.xml)
@@ -71,10 +94,10 @@ PowerShell Core on Linux is not tested but intended to be supported.
 
 		```powershell
 		# Get a binary file's contents
-		cat ./file.bin
+		gc ./file.bin
 
 		# Get a text file's contents
-		cat ./file.txt -Encoding UTF8
+		gc ./file.txt -Encoding UTF8
 		```
 
 	* Download a file
@@ -83,14 +106,14 @@ PowerShell Core on Linux is not tested but intended to be supported.
 		# Can't use Copy-Item because it doesn't support the source and target being different providers.
 
 		# Download a binary file
-		[System.IO.File]::WriteAllBytes('C:\file.bin', $(cat './file.bin'))
+		[System.IO.File]::WriteAllBytes('C:\file.bin', $(gc './file.bin'))
 
 		# Download a text file
-		Set-Content C:\file.txt $(cat './file.txt' -Encoding UTF8) -Encoding UTF8
+		Set-Content C:\file.txt $(gc './file.txt' -Encoding UTF8) -Encoding UTF8
 
 		# You don't need to cd to the site drive first. Fully qualified paths work too.
-		[System.IO.File]::WriteAllBytes('C:\file.bin', $(cat 'MyFtpSite:/file.bin'))
-		Set-Content C:\file.txt $(cat 'MyFtpSite:/file.txt' -Encoding UTF8) -Encoding UTF8
+		[System.IO.File]::WriteAllBytes('C:\file.bin', $(gc 'MyFtpSite:/file.bin'))
+		Set-Content C:\file.txt $(gc 'MyFtpSite:/file.txt' -Encoding UTF8) -Encoding UTF8
 		```
 
 	* Set a file's contents
@@ -110,14 +133,15 @@ PowerShell Core on Linux is not tested but intended to be supported.
 
 		```powershell
 		# Upload a binary file
-		Set-Content './file.bin' -Encoding Byte $(Get-Content -Encoding Byte 'C:\file.bin')
+		Set-Content './file.bin' -Encoding Byte $(gc -Encoding Byte 'C:\file.bin')
 
 		# Upload a text file. Get-Content will return one string per line and Set-Content will add a `n at the end of each.
-		# If you don't want this, use binary mode as in the above example
-		Set-Content './file.txt' -Encoding UTF8 $(Get-Content -Encoding UTF8 'C:\file.txt')
+		# If the original file did not have `n newlines, this will cause the file on the server to be different from the local file.
+		# If you don't want this to happen, use binary mode as in the above example
+		Set-Content './file.txt' -Encoding UTF8 $(gc -Encoding UTF8 'C:\file.txt')
 
 		# Upload a text file. Let PS guess the encoding of the input file. Output encoding still defaults to UTF8 and each line is terminated with a `n.
-		Set-Content './file.txt' $(Get-Content 'C:\file.txt')
+		Set-Content './file.txt' $(gc 'C:\file.txt')
 		```
 
 	* Append to a file
@@ -136,9 +160,9 @@ PowerShell Core on Linux is not tested but intended to be supported.
 
 ### Caveats of the drive cache
 
-PsFtpProvider drives cache the directory structure to avoid making repeated calls to the FTP server. For example, if you dir in a directory, it will cache the list of children to make future invocations of dir faster. If you then create a file a.txt using another FTP client in the same directory, running dir will continue to show the old directory listing.
+PsFtp drives cache the directory structure to avoid making repeated calls to the FTP server. For example, if you run `dir` in a directory, it will cache the list of children to make future invocations of `dir` faster. If you then create a file `a.txt` using another FTP client in the same directory, running `dir` will continue to show the old directory listing.
 
-In this case, you can use the Clear-FtpDriveCache commandlet to clear the cache for the drive.
+In this case, you can use the `Clear-FtpDriveCache` commandlet to clear the cache for the drive.
 
 ```powershell
 # Clear the current drive's cache
@@ -148,7 +172,7 @@ Clear-FtpDriveCache
 Clear-FtpDriveCache $(Get-PSDrive MyFtpSite)
 ```
 
-In some cases, this cache self-heals. For example, in the above example, dir would not show the new file until you cleared the cache and ran dir again. However, if you didn't clear the cache and tried to do ```cat a.txt```, PsFtpProvider would try to look up a.txt in the cache, fail to find it, and refresh the cache automatically to see if it exists now. After that, you would see the file in the output of dir.
+In some cases, this cache self-heals. For example, in the above example, `dir` would not show the new file until you cleared the cache and ran `dir` again. However, if you didn't clear the cache and tried to do ```gc a.txt```, PsFtpProvider would try to look up `a.txt` in the cache, fail to find it, and refresh the cache automatically to see if it exists now. After that, you would start seeing `a.txt` in the output of `dir`.
 
 
 ### Links
