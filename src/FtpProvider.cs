@@ -192,10 +192,8 @@ namespace PsFtpProvider
 		protected override object NewDriveDynamicParameters() =>
 			new NewFtpDriveDynamicParameters();
 
-		protected override PSDriveInfo RemoveDrive(PSDriveInfo drive)
-		{
-			throw new InvalidOperationException("Removing drives is not allowed with this provider.");
-		}
+		protected override PSDriveInfo RemoveDrive(PSDriveInfo drive) =>
+			drive;
 
 		#endregion
 
