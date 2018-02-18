@@ -49,12 +49,20 @@ namespace PsFtpProvider
 
 			Client = client;
 
+			#if NET47
+
 			var encoding = parameters?.Encoding ?? FileSystemCmdletProviderEncoding.Byte;
 
 			if (encoding != FileSystemCmdletProviderEncoding.Byte)
 			{
 				Encoding = new FileSystemContentWriterDynamicParameters() { Encoding = encoding }.EncodingType;
 			}
+
+			#elif NETCOREAPP2_0
+
+			Encoding = parameters?.Encoding;
+
+			#endif
 		}
 
 		public virtual void Seek(long offset, SeekOrigin origin)
@@ -437,6 +445,8 @@ namespace PsFtpProvider
 
 	internal abstract class ContentReaderWriterDynamicParametersBase
 	{
+		#if NET47
+
 		private FileSystemCmdletProviderEncoding encoding;
 
 		[Parameter]
@@ -445,6 +455,18 @@ namespace PsFtpProvider
 			get => encoding == FileSystemCmdletProviderEncoding.Unknown ? FileSystemCmdletProviderEncoding.Byte : encoding;
 			set => encoding = value;
 		}
+
+		#elif NETCOREAPP2_0
+
+		[Parameter]
+		// TODO: The built-in FileSystemProvider's commandlets use ArgumentToEncodingTransformation and ArgumentCompletions on this parameter
+		// to map well-known strings to Encoding objects.
+		// But the required types are marked internal, so cannot be used by third-party providers.
+		//
+		// Ref: https://github.com/PowerShell/PowerShell/issues/6181
+		public Encoding Encoding { get; set; }
+
+		#endif
 	}
 
 	internal class ContentReaderDynamicParameters : ContentReaderWriterDynamicParametersBase

@@ -5,10 +5,19 @@ It allows you to interact with FTP sites using the commandlets you use for worki
 
 ### Build
 
-```batchfile
-dotnet restore
-dotnet publish
-```
+- PowerShell 5.0
+
+	```batchfile
+	dotnet publish -f net47
+	```
+
+- PowerShell Core (Windows)
+
+	```batchfile
+	dotnet publish -f netcoreapp2.0 -r win-x64
+	```
+
+PowerShell Core on Linux is not tested but intended to be supported.
 
 
 ### Use
@@ -16,7 +25,7 @@ dotnet publish
 * Import the provider into a PS session
 
 	```powershell
-	cd bin\Debug\net47\publish
+	cd bin\Debug\net47\publish # or bin\Debug\netcoreapp2.0\win-x64\publish
 	Import-Module .\PsFtpProvider.psd1
 	```
 
