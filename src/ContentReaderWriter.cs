@@ -458,13 +458,74 @@ namespace PsFtpProvider
 
 		#elif NETCOREAPP2_0
 
-		[Parameter]
-		// TODO: The built-in FileSystemProvider's commandlets use ArgumentToEncodingTransformation and ArgumentCompletions on this parameter
-		// to map well-known strings to Encoding objects.
-		// But the required types are marked internal, so cannot be used by third-party providers.
+		// TODO: The built-in FileSystemProvider's commandlets use ArgumentToEncodingTransformation on their Encoding parameter
+		// to map well-known strings to Encoding objects. But that attribute is internal to System.Management.Automation,
+		// so cannot be used by third-party providers.
 		//
-		// Ref: https://github.com/PowerShell/PowerShell/issues/6181
+		// Ref: https://github.com/Arnavion/PsFtpProvider/issues/6
+		//
+		// So this code has a copy of the attribute from PS Core's source.
+
+		[Parameter]
+		[ArgumentToEncodingTransformation]
+		[ArgumentCompletions(
+			ArgumentToEncodingTransformationAttribute.Ascii,
+			ArgumentToEncodingTransformationAttribute.BigEndianUnicode,
+			ArgumentToEncodingTransformationAttribute.OEM,
+			ArgumentToEncodingTransformationAttribute.Unicode,
+			ArgumentToEncodingTransformationAttribute.Utf7,
+			ArgumentToEncodingTransformationAttribute.Utf8,
+			ArgumentToEncodingTransformationAttribute.Utf8Bom,
+			ArgumentToEncodingTransformationAttribute.Utf8NoBom,
+			ArgumentToEncodingTransformationAttribute.Utf32
+		)] // https://github.com/PowerShell/PowerShell/blob/v6.0.2/src/System.Management.Automation/namespaces/FileSystemProvider.cs#L7594-L7604
 		public Encoding Encoding { get; set; }
+
+		private class ArgumentToEncodingTransformationAttribute : ArgumentTransformationAttribute
+		{
+			// https://github.com/PowerShell/PowerShell/blob/v6.0.2/src/System.Management.Automation/utils/EncodingUtils.cs#L17-L47
+
+			internal const string Ascii = "ascii";
+			internal const string BigEndianUnicode = "bigendianunicode";
+			internal const string Default = "default";
+			internal const string OEM = "oem";
+			internal const string String = "string";
+			internal const string Unknown = "unknown";
+			internal const string Unicode = "unicode";
+			internal const string Utf7 = "utf7";
+			internal const string Utf8 = "utf8";
+			internal const string Utf8Bom = "utf8BOM";
+			internal const string Utf8NoBom = "utf8NoBOM";
+			internal const string Utf32 = "utf32";
+
+			private static Dictionary<string, Encoding> encodingMap =
+				new Dictionary<string, Encoding>(StringComparer.OrdinalIgnoreCase)
+				{
+					{ Ascii, Encoding.ASCII },
+					{ BigEndianUnicode, Encoding.BigEndianUnicode },
+					{ Default, new UTF8Encoding(false) },
+					{ OEM, new UTF8Encoding(false) },
+					{ String, Encoding.Unicode },
+					{ Unknown, Encoding.Unicode },
+					{ Unicode, Encoding.Unicode },
+					{ Utf7, Encoding.UTF7 },
+					{ Utf8, new UTF8Encoding(false) },
+					{ Utf8Bom, Encoding.UTF8 },
+					{ Utf8NoBom, new UTF8Encoding(false) },
+					{ Utf32, Encoding.UTF32 },
+				};
+
+			// https://github.com/PowerShell/PowerShell/blob/v6.0.2/src/System.Management.Automation/utils/EncodingUtils.cs#L93-L102
+			public override object Transform(EngineIntrinsics engineIntrinsics, object inputData)
+			{
+				if (inputData is string encodingName && encodingMap.TryGetValue(encodingName, out var encoding))
+				{
+					return encoding;
+				}
+
+				return inputData;
+			}
+		}
 
 		#endif
 	}
