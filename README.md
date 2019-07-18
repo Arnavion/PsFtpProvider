@@ -14,13 +14,13 @@ It allows you to interact with FTP sites using the commandlets you use for worki
 - PowerShell Core (Windows)
 
 	```powershell
-	dotnet publish -f netcoreapp2.0 -r win-x64
+	dotnet publish -f netcoreapp2.2 -r win-x64
 	```
 
 - PowerShell Core (Linux)
 
 	```powershell
-	dotnet publish -f netcoreapp2.0 -r linux-x64
+	dotnet publish -f netcoreapp2.2 -r linux-x64
 	```
 
 

@@ -49,7 +49,11 @@ namespace PsFtpProvider
 
 			Client = client;
 
-			#if NET47
+			#if NETCOREAPP
+
+			Encoding = parameters?.Encoding;
+
+			#else
 
 			var encoding = parameters?.Encoding ?? FileSystemCmdletProviderEncoding.Byte;
 
@@ -57,10 +61,6 @@ namespace PsFtpProvider
 			{
 				Encoding = new FileSystemContentWriterDynamicParameters() { Encoding = encoding }.EncodingType;
 			}
-
-			#elif NETCOREAPP2_0
-
-			Encoding = parameters?.Encoding;
 
 			#endif
 		}
@@ -445,18 +445,7 @@ namespace PsFtpProvider
 
 	internal abstract class ContentReaderWriterDynamicParametersBase
 	{
-		#if NET47
-
-		private FileSystemCmdletProviderEncoding encoding;
-
-		[Parameter]
-		public FileSystemCmdletProviderEncoding Encoding
-		{
-			get => encoding == FileSystemCmdletProviderEncoding.Unknown ? FileSystemCmdletProviderEncoding.Byte : encoding;
-			set => encoding = value;
-		}
-
-		#elif NETCOREAPP2_0
+		#if NETCOREAPP
 
 		// TODO: The built-in FileSystemProvider's commandlets use ArgumentToEncodingTransformation on their Encoding parameter
 		// to map well-known strings to Encoding objects. But that attribute is internal to System.Management.Automation,
@@ -525,6 +514,17 @@ namespace PsFtpProvider
 
 				return inputData;
 			}
+		}
+
+		#else
+
+		private FileSystemCmdletProviderEncoding encoding;
+
+		[Parameter]
+		public FileSystemCmdletProviderEncoding Encoding
+		{
+			get => encoding == FileSystemCmdletProviderEncoding.Unknown ? FileSystemCmdletProviderEncoding.Byte : encoding;
+			set => encoding = value;
 		}
 
 		#endif

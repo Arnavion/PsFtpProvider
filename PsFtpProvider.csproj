@@ -7,7 +7,7 @@
 		<Authors><![CDATA[Arnav Singh <arnavion@gmail.com>]]></Authors>
 		<Copyright>Copyright 2014 Arnav Singh</Copyright>
 
-		<TargetFrameworks>net47;netcoreapp2.0</TargetFrameworks>
+		<TargetFrameworks>net47;netcoreapp2.2</TargetFrameworks>
 
 		<PackageId>PsFtpProvider</PackageId>
 	</PropertyGroup>
@@ -19,13 +19,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="FluentFTP" Version="19.*" />
+		<PackageReference Include="FluentFTP" Version="26.*" />
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net47'">
-		<PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" Version="1.1.0" />
+		<PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" Version="1.*" />
 	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
-		<PackageReference Include="System.Management.Automation" Version="6.0.*" />
+	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2'">
+		<PackageReference Include="System.Management.Automation" Version="6.*" />
 	</ItemGroup>
 
 </Project>
