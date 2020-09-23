@@ -1,3 +1,7 @@
+This project is no longer maintained.
+
+---
+
 PsFtpProvider is a PowerShell provider for FTP sites.
 
 It allows you to interact with FTP sites using the commandlets you use for working with local files, such as `Set-Location (cd)`, `Get-ChildItem (dir)` and `Get-/Set-Content`. Sites are loaded by default from Filezilla's `sitemanager.xml` if present, and exposed as drives you can `cd` into.
